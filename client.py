@@ -6,7 +6,7 @@ import socket
 
 CLIENT_SOC = ""
 SM = ScreenManager()
-USERNAME = "0"
+USERNAME = ""
 CURRENT = ""
 IDEAL = ""
 
@@ -20,8 +20,6 @@ class StartScreen(Screen):
         when pressing the login button it sends to the server request to login and move to login screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, "log")
-        recv_from_server(CLIENT_SOC)
         SM.current = 'log in'
 
     @staticmethod
@@ -30,8 +28,6 @@ class StartScreen(Screen):
         when pressing the signup button it sends to the server request to signup and move to signup screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, "sign")
-        recv_from_server(CLIENT_SOC)
         SM.current = 'sign up'
 
 
@@ -50,7 +46,7 @@ class LogInScreen(Screen):
         """
         global USERNAME, CURRENT, IDEAL
         username = self.username.text
-        send_to_server(CLIENT_SOC, username)
+        send_to_server(CLIENT_SOC, ("log" + " " + username))
         data_from_server = recv_from_server(CLIENT_SOC)
         if "Successfully" in data_from_server:
             print(":)")
@@ -79,7 +75,7 @@ class SignUpScreen(Screen):
         """
         global USERNAME
         username = self.username.text
-        send_to_server(CLIENT_SOC, username)
+        send_to_server(CLIENT_SOC, ("sign" + " " + username))
         data_from_server = recv_from_server(CLIENT_SOC)
         if "Send" in data_from_server:
             print(":)")

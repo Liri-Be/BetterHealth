@@ -134,17 +134,15 @@ def suggestions():
     pass
 
 
-def sign_up(p_client_soc, db):
+def sign_up(p_client_soc, p_name, db):
     """
     gets username from client, check if it's in the database, if not sign up, otherwise send appropriate msg
     :param p_client_soc: the client socket
+    :param p_name: the username of the client user
     :param db: reference to the database
     :return: None
     """
-    p_client_soc.send(b"Send me your username")
-    p_name = p_client_soc.recv(1024).decode()
-
-    while find_name(p_name, db):  # the username is taken
+    if find_name(p_name, db):  # the username is taken
         p_client_soc.send(b"Username is taken.")
         p_name = p_client_soc.recv(1024).decode()
 
@@ -172,19 +170,17 @@ def sign_up(p_client_soc, db):
     p_client_soc.send(b"Successfully signed up.")
 
 
-def log_in(p_client_soc, db):
+def log_in(p_client_soc, p_name, db):
     """
     gets username from client, check if it's in the database, if so log in, otherwise send appropriate msg
+    :param p_name: the username of the client user
     :param p_client_soc: the client socket
     :param db: reference to the database
     :return: None
     """
-    p_client_soc.send(b"Send me your username")  # ask from client the username
-    p_name = p_client_soc.recv(1024).decode()
-
-    while not find_name(p_name, db):  # the username not found, wait until it found
+    if not find_name(p_name, db):  # the username not found, wait until it found
         p_client_soc.send(b"Username is not found.")
-        p_name = p_client_soc.recv(1024).decode()
+        return
 
     # username found
     doc_ref = db.collection(u'Names').document(p_name)
@@ -279,17 +275,25 @@ def main():
                 open_sockets.append(new_soc)
                 data = new_soc.recv(1024).decode()
                 print(data)
-                if data == "log":
-                    log_in(new_soc, db)
-                elif data == "sign":
-                    sign_up(new_soc, db)
+                if data != "":
+                    data = data.split(" ")
+                    commend = data[0]
+                    username = data[1]
+                    if commend == "log":
+                        log_in(new_soc, username, db)
+                    elif commend == "sign":
+                        sign_up(new_soc, username, db)
             else:
                 data = new_soc.recv(1024).decode()
                 if data != "":
                     data = data.split(" ")
                     commend = data[0]
                     username = data[1]
-                    if commend == "update":
+                    if commend == "log":
+                        log_in(new_soc, username, db)
+                    elif commend == "sign":
+                        sign_up(new_soc, username, db)
+                    elif commend == "update":
                         info = new_soc.recv(1024).decode().split(" ")
                         print(info)
                         update_info(new_soc, username, info, db)
