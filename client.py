@@ -44,6 +44,11 @@ class StartScreen(Screen):
 
     @staticmethod
     def pressed_exit():
+        """
+        when pressing the exit button it sends data to the server and modify it that we are leaving the app
+        and close the screen
+        :return: None
+        """
         connect_to_server()
         send_to_server(CLIENT_SOC, ("off" + " " + "."))
         data = recv_from_server(CLIENT_SOC)
@@ -123,6 +128,10 @@ class SignInfoScreen(Screen):
         self.error_lbl = self.ids['error_msg']
 
     def pressed(self):
+        """
+        when pressing the submit button it sends data to the server - move to main screen if succeed
+        :return: None
+        """
         user_age = self.user_age.text
         user_height = self.user_height.text
         user_weight = self.user_weight.text
@@ -169,6 +178,10 @@ class UpdateInfoScreen(Screen):
         self.error_lbl = self.ids['error_msg']
 
     def pressed(self):
+        """
+        when pressing the submit button it sends data to the server - move to main screen if succeed
+        :return: None
+        """
         user_age = self.user_age.text
         user_height = self.user_height.text
         user_weight = self.user_weight.text
@@ -221,11 +234,19 @@ class AddFoodScreen(Screen):
         self.error_lbl = self.ids['error_msg']
 
     def pressed_spinner(self, choice):
+        """
+        when pressing the spinner it save the choice the user made
+        :return: None
+        """
         global CHOICE
         self.error_lbl.text = str(choice)
         CHOICE = choice
 
     def pressed_submit(self):
+        """
+        when pressing the submit button it sends data to the server - move to main screen if succeed
+        :return: None
+        """
         global CHOICE, CLIENT_SOC
         user_amount = self.user_amount.text
 
@@ -263,11 +284,19 @@ class AddSportScreen(Screen):
         self.error_lbl = self.ids['error_msg']
 
     def pressed_spinner(self, choice):
+        """
+        when pressing the spinner it save the choice the user made
+        :return: None
+        """
         global CHOICE
         self.error_lbl.text = str(choice)
         CHOICE = choice
 
     def pressed_submit(self):
+        """
+        when pressing the submit button it sends data to the server - move to main screen if succeed
+        :return: None
+        """
         global CHOICE, CLIENT_SOC
         user_amount = self.user_amount.text
 
@@ -311,19 +340,39 @@ class MainScreen(Screen):
 
     @staticmethod
     def pressed_update():
+        """
+        when pressing the update button it sends data to the server and modify it that we are updating the info
+        and move to the update info screen
+        :return: None
+        """
         send_to_server(CLIENT_SOC, ("update" + " " + USERNAME))
         SM.current = 'update info'
 
     @staticmethod
     def pressed_add_food():
+        """
+        when pressing the add food button it sends data to the server and modify it that we are adding food
+        and move to the add food screen
+        :return: None
+        """
         SM.current = 'food'
 
     @staticmethod
     def pressed_add_sport():
+        """
+        when pressing the add sport button it sends data to the server and modify it that we are adding sport
+        and move to the add sport screen
+        :return: None
+        """
         SM.current = 'sport'
 
     @staticmethod
     def pressed_exit():
+        """
+        when pressing the exit button it sends data to the server and modify it that we are leaving the app
+        and close the screen
+        :return: None
+        """
         send_to_server(CLIENT_SOC, ("off" + " " + "."))
         data = recv_from_server(CLIENT_SOC)
         if "Goodbye" in data:  # exit
