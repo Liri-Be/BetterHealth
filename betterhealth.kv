@@ -167,74 +167,66 @@
 
     GridLayout:
         size: root.width, root.height
-        rows: 2
-
-        GridLayout:
-            size: 300, 100
-            rows: 3
-
-            GridLayout:
-                cols: 2
-
-                Label:
-                    text: "Current calories:"
-                    pos: 200, 450
-
-                Label:
-                    id: current
-                    text: ""
-                    pos: 300, 450
-
-            GridLayout:
-                cols: 2
-                Label:
-                    text: "Ideal calories:"
-                    pos: 200, 400
-
-                Label:
-                    id: ideal
-                    text: ""
-                    pos: 300, 400
-
-            Button:
-                text: "Update Calories"
-                size: 400, 50
-                pos: 200, 350
-                on_press: root.update_calories()
+        rows: 8
 
 
         GridLayout:
-            size: 400, 400
-            rows: 4
+            cols: 2
 
-            Button:
-                text: "Add food"
-                size: 400, 50
-                pos: 200, 275
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_add_food()
+            Label:
+                text: "Current calories:"
+                pos: 200, 450
 
-            Button:
-                text: "Add sport"
-                size: 400, 50
-                pos: 200, 200
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_add_sport()
+            Label:
+                id: current
+                text: ""
+                pos: 300, 450
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Ideal calories:"
+                pos: 200, 400
+
+            Label:
+                id: ideal
+                text: ""
+                pos: 300, 400
+
+        Button:
+            text: "Update Calories"
+            size: 400, 50
+            pos: 200, 350
+            on_press: root.update_calories()
+
+        Button:
+            text: "Add food"
+            size: 400, 50
+            pos: 200, 275
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_food()
+
+        Button:
+            text: "Add sport"
+            size: 400, 50
+            pos: 200, 200
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_sport()
 
 
-            Button:
-                text: "Update info"
-                size: 400, 50
-                pos: 200, 125
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_update()
+        Button:
+            text: "Update info"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_update()
 
-            Button:
-                text: "Exit"
-                size: 400, 50
-                pos: 200, 50
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_exit()
+        Button:
+            text: "Exit"
+            size: 400, 50
+            pos: 200, 50
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_exit()
 
 
 <UpdateInfoScreen>:
