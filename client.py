@@ -399,7 +399,7 @@ def connect_to_server():
     # handle the connection to the server
     global CLIENT_SOC  # global var to save the client socket
     client_socket = socket.socket()
-    client_socket.connect(('10.0.0.41', 10000))  # connect to server in port 10000
+    client_socket.connect(('10.0.0.26', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
 
 
