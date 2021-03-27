@@ -14,6 +14,7 @@
 
         Button:
             text: 'Exit'
+            on_press: root.pressed_exit()
 
 
 <LogInScreen>:
@@ -93,7 +94,7 @@
 
     GridLayout:
         size: root.width, root.height
-        rows: 5
+        rows: 6
 
         GridLayout:
             cols: 2
@@ -143,6 +144,10 @@
                 multiline: False
                 pos: 350, 175
                 size: 400, 50
+
+        Label:
+            id: error_msg
+            text: ""
 
 
         GridLayout:
@@ -207,12 +212,14 @@
                 size: 400, 50
                 pos: 200, 275
                 background_color: 2, 0, 0, 1
+                on_press: root.pressed_add_food()
 
             Button:
                 text: "Add sport"
                 size: 400, 50
                 pos: 200, 200
                 background_color: 2, 0, 0, 1
+                on_press: root.pressed_add_sport()
 
 
             Button:
@@ -227,6 +234,7 @@
                 size: 400, 50
                 pos: 200, 50
                 background_color: 2, 0, 0, 1
+                on_press: root.pressed_exit()
 
 
 <UpdateInfoScreen>:
@@ -238,7 +246,7 @@
 
     GridLayout:
         size: root.width, root.height
-        rows: 5
+        rows: 6
 
         GridLayout:
             cols: 2
@@ -289,6 +297,9 @@
                 pos: 350, 175
                 size: 400, 50
 
+        Label:
+            id: error_msg
+            text: ""
 
         GridLayout:
             size: 200, 200
@@ -300,3 +311,87 @@
                 pos: 350, 75
                 background_color: 2, 0, 0, 1
                 on_press: root.pressed()
+
+
+<AddFoodScreen>
+
+    rows: 1
+    user_amount: user_amount
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Spinner:
+            id: spinner
+            text: "Choose type of food"
+            values: root.arr_food
+            on_text: root.pressed_spinner(spinner.text)
+
+        Label:
+            id: error_msg
+            text: ""
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter amount (grams):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()
+
+
+<AddSportScreen>
+
+    rows: 1
+    user_amount: user_amount
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Spinner:
+            id: spinner
+            text: "Choose type of sport"
+            values: root.arr_sport
+            on_text: root.pressed_spinner(spinner.text)
+
+        Label:
+            id: error_msg
+            text: ""
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter time (min):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()

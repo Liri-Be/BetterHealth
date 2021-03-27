@@ -1,7 +1,7 @@
 from kivy.app import App
-from kivy.uix.label import Label
+from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, ListProperty
 import socket
 
 CLIENT_SOC = ""
@@ -9,6 +9,16 @@ SM = ScreenManager()
 USERNAME = ""
 CURRENT = ""
 IDEAL = ""
+CHOICE = ""
+FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
+               "Broccoli", "Butter", "Cabbage", "Cauliflower", "Celery", "Chicken", "Chocolate", "Cornflakes",
+               "Cottage cheese", "Cream cheese", "Cucumber", "Dates", "Egg", "Grapes", "Honey", "Ice cream", " Jam",
+               "Kiwi", "Lettuce", "Liver", "Margarine", "Melon", "Milk", "Muesli", "Mushrooms", "Noodles", "Oil",
+               "Olives", "Onion", " Orange", "Pasta", "Peach", "Pear", "Peas", "Pepper yellow", "Pineapple", "Popcorn",
+               "Potatoes", "Rice", "Salmon", "Sardines", "Spaghetti", "Steak", "Strawberries", "Syrup", "Toffee",
+               "Tomato", "Tomato cherry", "Tuna", "White cheese", "White sugar", "Yogurt"]
+SPORT_VALUES = ["Basketball", "Bowling", "Cycling", "Dancing", "Gardening", "Golf", "Hiking", "Jogging", "Skating",
+                "Skiing", "Swimming", "Tennis", "Waling", "Weight Training"]
 
 
 class StartScreen(Screen):
@@ -20,6 +30,7 @@ class StartScreen(Screen):
         when pressing the login button it sends to the server request to login and move to login screen
         :return: None
         """
+        connect_to_server()
         SM.current = 'log in'
 
     @staticmethod
@@ -28,7 +39,17 @@ class StartScreen(Screen):
         when pressing the signup button it sends to the server request to signup and move to signup screen
         :return: None
         """
+        connect_to_server()
         SM.current = 'sign up'
+
+    @staticmethod
+    def pressed_exit():
+        connect_to_server()
+        send_to_server(CLIENT_SOC, ("off" + " " + "."))
+        data = recv_from_server(CLIENT_SOC)
+        if "Goodbye" in data:  # exit
+            BetterHealthApp.get_running_app().stop()
+            Window.close()
 
 
 class LogInScreen(Screen):
@@ -75,23 +96,31 @@ class SignUpScreen(Screen):
         """
         global USERNAME
         username = self.username.text
-        send_to_server(CLIENT_SOC, ("sign" + " " + username))
-        data_from_server = recv_from_server(CLIENT_SOC)
-        if "Send" in data_from_server:
-            print(":)")
-            USERNAME = username
-            SM.current = 'sign info'
+        if " " in username:  # error state
+            send_to_server(CLIENT_SOC, ("error" + " " + username))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
         else:
-            print(":(")
-            self.error_lbl.text = "Username is taken."
+            send_to_server(CLIENT_SOC, ("sign" + " " + username))
+            data_from_server = recv_from_server(CLIENT_SOC)
+            if "Send" in data_from_server:
+                print(":)")
+                USERNAME = username
+                SM.current = 'sign info'
+            else:
+                print(":(")
+                self.error_lbl.text = "Username is taken."
 
 
 class SignInfoScreen(Screen):
-    global CLIENT_SOC, SM
+    global CLIENT_SOC, SM, USERNAME
     user_age = ObjectProperty(None)
     user_height = ObjectProperty(None)
     user_weight = ObjectProperty(None)
     user_sex = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super(SignInfoScreen, self).__init__(**kwargs)
+        self.error_lbl = self.ids['error_msg']
 
     def pressed(self):
         user_age = self.user_age.text
@@ -99,18 +128,33 @@ class SignInfoScreen(Screen):
         user_weight = self.user_weight.text
         user_sex = self.user_sex.text
 
-        user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
-        send_to_server(CLIENT_SOC, user_data)
+        # error state
+        if not (user_height.isnumeric() or user_weight.isnumeric() or user_age.isnumeric()):
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
 
-        data_from_server = recv_from_server(CLIENT_SOC)
-        if "Successfully" in data_from_server:
-            print(":)")
+        elif not (user_sex == "f" or user_sex == "m"):
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
 
-            # update the server that we need the calories
-            update_calories(CLIENT_SOC)
-            SM.current = 'main'
+        elif user_age == "" or user_height == "" or user_weight == "" or user_sex == "":
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+
+        # good input
         else:
-            print(":(")
+            user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
+            send_to_server(CLIENT_SOC, user_data)
+
+            data_from_server = recv_from_server(CLIENT_SOC)
+            if "Successfully" in data_from_server:
+                print(":)")
+
+                # update the server that we need the calories
+                update_calories(CLIENT_SOC)
+                SM.current = 'main'
+            else:
+                print(":(")
 
 
 class UpdateInfoScreen(Screen):
@@ -120,31 +164,136 @@ class UpdateInfoScreen(Screen):
     user_weight = ObjectProperty(None)
     user_sex = ObjectProperty(None)
 
+    def __init__(self, **kwargs):
+        super(UpdateInfoScreen, self).__init__(**kwargs)
+        self.error_lbl = self.ids['error_msg']
+
     def pressed(self):
         user_age = self.user_age.text
         user_height = self.user_height.text
         user_weight = self.user_weight.text
         user_sex = self.user_sex.text
 
-        user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
-        send_to_server(CLIENT_SOC, user_data)
+        # error state
+        if not (user_height.isnumeric() or user_weight.isnumeric() or user_age.isnumeric()):
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
 
-        data_from_server = recv_from_server(CLIENT_SOC)
-        if "Successfully" in data_from_server:
-            print(":)")
+        elif not (user_sex == "f" or user_sex == "m"):
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
 
-            # clear data from text input
-            self.user_age.text = ""
-            self.user_height.text = ""
-            self.user_weight.text = ""
-            self.user_sex.text = ""
+        elif user_age == "" or user_height == "" or user_weight == "" or user_sex == "":
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
 
-            # update the server that we need the calories
-            update_calories(CLIENT_SOC)
-            SM.current = 'main'
-
+        # good input
         else:
-            print(":(")
+            user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
+            send_to_server(CLIENT_SOC, user_data)
+
+            data_from_server = recv_from_server(CLIENT_SOC)
+            if "Successfully" in data_from_server:
+                print(":)")
+
+                # clear data from text input
+                self.user_age.text = ""
+                self.user_height.text = ""
+                self.user_weight.text = ""
+                self.user_sex.text = ""
+
+                # update the server that we need the calories
+                update_calories(CLIENT_SOC)
+                SM.current = 'main'
+
+            else:
+                print(":(")
+                self.error_lbl.text = "error accord"
+
+
+class AddFoodScreen(Screen):
+    global FOOD_VALUES
+    user_amount = ObjectProperty(None)
+    arr_food = ListProperty(FOOD_VALUES)
+
+    def __init__(self, **kwargs):
+        super(AddFoodScreen, self).__init__(**kwargs)
+        self.error_lbl = self.ids['error_msg']
+
+    def pressed_spinner(self, choice):
+        global CHOICE
+        self.error_lbl.text = str(choice)
+        CHOICE = choice
+
+    def pressed_submit(self):
+        global CHOICE, CLIENT_SOC
+        user_amount = self.user_amount.text
+
+        send_to_server(CLIENT_SOC, ("food" + " " + USERNAME))  # let the server know we entering food
+
+        if user_amount == "" or not user_amount.isnumeric():  # error state
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+
+        else:  # good input
+            user_data = CHOICE + " " + user_amount
+            send_to_server(CLIENT_SOC, user_data)
+            data = recv_from_server(CLIENT_SOC)
+            if "Finished" in data:
+                print(":)")
+
+                # clear data from text input
+                self.user_amount.text = ""
+
+                # update the server that we need the calories
+                update_calories(CLIENT_SOC)
+                SM.current = 'main'
+            else:
+                print(":(")
+                self.error_lbl.text = "error accord"
+
+
+class AddSportScreen(Screen):
+    global SPORT_VALUES
+    user_amount = ObjectProperty(None)
+    arr_sport = ListProperty(SPORT_VALUES)
+
+    def __init__(self, **kwargs):
+        super(AddSportScreen, self).__init__(**kwargs)
+        self.error_lbl = self.ids['error_msg']
+
+    def pressed_spinner(self, choice):
+        global CHOICE
+        self.error_lbl.text = str(choice)
+        CHOICE = choice
+
+    def pressed_submit(self):
+        global CHOICE, CLIENT_SOC
+        user_amount = self.user_amount.text
+
+        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we entering food
+
+        if user_amount == "" or not user_amount.isnumeric():  # error state
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+
+        else:  # good input
+            user_data = CHOICE + " " + user_amount
+            send_to_server(CLIENT_SOC, user_data)
+            data = recv_from_server(CLIENT_SOC)
+            if "Finished" in data:
+                print(":)")
+
+                # clear data from text input
+                self.user_amount.text = ""
+                self.error_lbl.text = ""
+
+                # update the server that we need the calories
+                update_calories(CLIENT_SOC)
+                SM.current = 'main'
+            else:
+                print(":(")
+                self.error_lbl.text = "error accord"
 
 
 class MainScreen(Screen):
@@ -165,6 +314,22 @@ class MainScreen(Screen):
         send_to_server(CLIENT_SOC, ("update" + " " + USERNAME))
         SM.current = 'update info'
 
+    @staticmethod
+    def pressed_add_food():
+        SM.current = 'food'
+
+    @staticmethod
+    def pressed_add_sport():
+        SM.current = 'sport'
+
+    @staticmethod
+    def pressed_exit():
+        send_to_server(CLIENT_SOC, ("off" + " " + "."))
+        data = recv_from_server(CLIENT_SOC)
+        if "Goodbye" in data:  # exit
+            BetterHealthApp.get_running_app().stop()
+            Window.close()
+
 
 class BetterHealthApp(App):
     global SM
@@ -176,7 +341,17 @@ class BetterHealthApp(App):
         SM.add_widget(SignInfoScreen(name='sign info'))
         SM.add_widget(UpdateInfoScreen(name='update info'))
         SM.add_widget(MainScreen(name='main'))
+        SM.add_widget(AddFoodScreen(name='food'))
+        SM.add_widget(AddSportScreen(name='sport'))
         return SM
+
+
+def connect_to_server():
+    # handle the connection to the server
+    global CLIENT_SOC  # global var to save the client socket
+    client_socket = socket.socket()
+    client_socket.connect(('10.0.0.41', 10000))  # connect to server in port 10000
+    CLIENT_SOC = client_socket
 
 
 def send_to_server(client_socket, data):
@@ -218,12 +393,6 @@ def update_calories(client_socket):
 
 
 def main():
-    # handle the connection to the server
-    global CLIENT_SOC  # global var to save the client socket
-    client_socket = socket.socket()
-    client_socket.connect(('192.168.56.1', 10000))  # connect to server in port 10000
-    CLIENT_SOC = client_socket
-
     # start the application
     BetterHealthApp().run()
 

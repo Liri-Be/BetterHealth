@@ -1,5 +1,5 @@
 import socket
-import select
+import threading
 import time
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -14,6 +14,10 @@ def update_info(p_client_soc, p_name, data, db):
     :param db: reference to the database
     :return: None
     """
+    if data[0] == "error":
+        p_client_soc.send(b"Invalid.")
+        return
+
     p_preferences = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
     for i in range(0, len(data) - 5):  # fill preferences arr
         p_preferences[i] = data[i + 4]
@@ -53,20 +57,32 @@ def calc_ideal_cal(p_height, p_weight, p_age, p_sex):
     return str(ideal)
 
 
-def enter_food(p_client_soc, p_food, p_amount, p_name, db):
+def enter_food(p_client_soc, p_name, db):
     """
     add the calories from the food to the document of the user in the database and send to the server appropriate msg
     :param p_client_soc: teh client socket
-    :param p_food: the type of food
-    :param p_amount: the amount of the food
+
     :param p_name: the username
     :param db: reference to the database
     :return: None
     """
+    # get data from user
+    data = p_client_soc.recv(1024).decode().split(" ")
+
+    if data[0] == "error":  # error state
+        p_client_soc.send(b"Invalid.")
+        return
+
+    # good input
+    p_food = data[0]
+    p_amount = data[1]
+
+    # get amount of calories
     cal = get_food(p_food, db)
 
     if cal == "Not Found.":
         p_client_soc.send(b"Didn't find the food.")
+        return
 
     cal_to_add = round(int(cal) * int(p_amount) / 100)
     doc_ref = db.collection(u'Names').document(p_name)
@@ -77,16 +93,25 @@ def enter_food(p_client_soc, p_food, p_amount, p_name, db):
     p_client_soc.send(b"Finished.")
 
 
-def enter_sport(p_client_soc, p_sport, p_amount, p_name, db):
+def enter_sport(p_client_soc, p_name, db):
     """
     add the calories from the food to the document of the user in the database and send to the server appropriate msg
     :param p_client_soc: the client socket
-    :param p_sport: the type of sport
-    :param p_amount: the amount
     :param p_name: the username
     :param db: reference to the database
     :return: None
     """
+    # get data from user
+    data = p_client_soc.recv(1024).decode().split(" ")
+
+    if data[0] == "error":  # error state
+        p_client_soc.send(b"Invalid.")
+        return
+
+    # good input
+    p_sport = data[0]
+    p_amount = data[1]
+
     doc_ref = db.collection(u'Names').document(p_name)
     data = doc_ref.get().to_dict()
     p_weight = data['weight']
@@ -95,6 +120,7 @@ def enter_sport(p_client_soc, p_sport, p_amount, p_name, db):
 
     if cal == "Not Found.":
         p_client_soc.send(b"Didn't find the sport.")
+        return
 
     cal_split = cal.split(".")
     cal_to_dec = int(cal_split[0]) + int(cal_split[1]) / 10
@@ -144,11 +170,15 @@ def sign_up(p_client_soc, p_name, db):
     """
     if find_name(p_name, db):  # the username is taken
         p_client_soc.send(b"Username is taken.")
-        p_name = p_client_soc.recv(1024).decode()
+        return
 
     # the username is not taken and can sign in
     p_client_soc.send(b"Send data")
     data = p_client_soc.recv(1024).decode().split(" ")
+
+    if data[0] == "error":
+        p_client_soc.send(b"Invalid.")
+        return
 
     p_preferences = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
     for i in range(0, len(data) - 5):  # fill preferences arr
@@ -245,8 +275,8 @@ def send_calories(p_client_soc, p_name, db):
     sends the current and the ideal amount of calories to the client
     :param p_client_soc: the client soc
     :param p_name: the username
-    :param db: reference to
-    :return:
+    :param db: reference to the database
+    :return: None
     """
     doc_ref = db.collection(u'Names').document(p_name)
     dict_data = doc_ref.get().to_dict()
@@ -254,55 +284,61 @@ def send_calories(p_client_soc, p_name, db):
     p_client_soc.send(data.encode())
 
 
+def handle_client(c_soc, db):
+    """
+    handles threads (clients) requests
+    :param c_soc: client socket
+    :param db: reference to the database
+    :return: None
+    """
+    while True:
+        data = c_soc.recv(1024).decode()
+        if data != "":
+            # get the commend and the username
+            data = data.split(" ")
+            commend = data[0]
+            username = data[1]
+
+            if commend == "log":
+                log_in(c_soc, username, db)
+            elif commend == "sign":
+                sign_up(c_soc, username, db)
+            elif commend == "update":
+                info = c_soc.recv(1024).decode().split(" ")
+                print(info)
+                update_info(c_soc, username, info, db)
+            elif commend == "main":
+                send_calories(c_soc, username, db)
+            elif commend == "food":
+                enter_food(c_soc, username, db)
+            elif commend == "sport":
+                enter_sport(c_soc, username, db)
+            elif commend == "error":
+                c_soc.send(b"Invalid.")
+            elif commend == "off":
+                c_soc.send(b"Goodbye.")
+                c_soc.close()
+                break
+        reset(db)
+
+
 def main():
     open_sockets = []
 
     server_socket = socket.socket()
-    server_socket.bind(('192.168.56.1', 10000))
+    server_socket.bind(('', 10000))
     server_socket.listen(10)
 
     cred = credentials.Certificate(r".\sample-3ae1d-firebase-adminsdk-wzkym-7e9ac9fcc9.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 
-    new_soc = ""
-
     while True:
-        r, w, e = select.select([server_socket] + open_sockets, open_sockets, [])
-        for soc in r:
-            if soc is server_socket:
-                (new_soc, address) = server_socket.accept()
-                open_sockets.append(new_soc)
-                data = new_soc.recv(1024).decode()
-                print(data)
-                if data != "":
-                    data = data.split(" ")
-                    commend = data[0]
-                    username = data[1]
-                    if commend == "log":
-                        log_in(new_soc, username, db)
-                    elif commend == "sign":
-                        sign_up(new_soc, username, db)
-            else:
-                data = new_soc.recv(1024).decode()
-                if data != "":
-                    data = data.split(" ")
-                    commend = data[0]
-                    username = data[1]
-                    if commend == "log":
-                        log_in(new_soc, username, db)
-                    elif commend == "sign":
-                        sign_up(new_soc, username, db)
-                    elif commend == "update":
-                        info = new_soc.recv(1024).decode().split(" ")
-                        print(info)
-                        update_info(new_soc, username, info, db)
-                    elif commend == 'main':
-                        send_calories(new_soc, username, db)
-                    elif commend == 'error':
-                        new_soc.send(b"Invalid.")
-
-        reset(db)
+        (c_soc, address) = server_socket.accept()
+        print("someone connected")
+        open_sockets.append(c_soc)
+        th = threading.Thread(target=handle_client, args=(c_soc, db))
+        th.start()
 
 
 if __name__ == '__main__':
