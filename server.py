@@ -141,18 +141,19 @@ def reset(db):
     :param db: reference to the database
     :return: None
     """
-    coll_ref = db.collection(u'Names').get()  # reference to the collection of users
-    t = time.localtime()
-    current_time = time.strftime("%H:%M", t)  # get the current time
-    hour = int(current_time.split(":")[0])
-    minute = int(current_time.split(":")[1])
-    if hour == 0 and 0 <= minute <= 10:  # if the day had passed, reset the current calories of the users
-        for doc in coll_ref:
-            doc_dict = doc.to_dict()
-            doc_dict['current cal'] = "0"
-            username = doc_dict['user name']
-            doc_ref = db.collection(u'Names').document(username)
-            doc_ref.set(doc_dict)
+    while True:
+        t = time.localtime()
+        current_time = time.strftime("%H:%M", t)  # get the current time
+        hour = int(current_time.split(":")[0])
+        minute = int(current_time.split(":")[1])
+        if hour == 0 and 0 <= minute <= 2:  # if the day had passed, reset the current calories of the users
+            coll_ref = db.collection(u'Names').get()  # reference to the collection of users
+            for doc in coll_ref:
+                doc_dict = doc.to_dict()
+                doc_dict['current cal'] = "0"
+                username = doc_dict['user name']
+                doc_ref = db.collection(u'Names').document(username)
+                doc_ref.set(doc_dict)
 
 
 def suggestions():
@@ -319,7 +320,6 @@ def handle_client(c_soc, db):
                 c_soc.send(b"Goodbye.")
                 c_soc.close()
                 break
-        reset(db)
 
 
 def main():
@@ -332,6 +332,9 @@ def main():
     cred = credentials.Certificate(r".\sample-3ae1d-firebase-adminsdk-wzkym-7e9ac9fcc9.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
+
+    th = threading.Thread(target=reset, args=(db,))  # make a thread that will take care of resetting the database
+    th.start()
 
     while True:
         (c_soc, address) = server_socket.accept()
