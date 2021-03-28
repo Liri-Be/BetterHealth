@@ -48,11 +48,10 @@ def calc_ideal_cal(p_height, p_weight, p_age, p_sex):
     :param p_sex: the sex of the user
     :return: the ideal amount of calories for a day - in string for the database
     """
-    ideal = 10 * int(p_weight) + 6.25 * int(p_height) - 5 * int(p_age)
-    if p_sex == 'f':
-        ideal = ideal - 161
+    if p_sex == 'm':
+        ideal = 66 + 6.2 * int(p_weight) + 12.7 * int(p_height) - 6.76 * int(p_age)
     else:
-        ideal = ideal + 5
+        ideal = 655.1 + 4.35 * int(p_weight) + 4.7 * int(p_height) - 4.76 * int(p_age)
     ideal = round(ideal)
     return str(ideal)
 
