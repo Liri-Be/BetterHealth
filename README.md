@@ -2,7 +2,7 @@
 
 An app that track you calories in each day - 
 using socket connection and Kivy GUI - 
-written in python
+written in python.
 
 ## Server part
 The server handles all the actions on the app - calculating the calories for a day, how many eaten and how many burned in sport activites. It also handles all the connections to the database - get info about member on the app, food or sport, upadate info about members and add new members to the app. At 12am the server make sure that the calories that gained in the current day will reset.
