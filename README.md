@@ -14,4 +14,4 @@ The client part hadles the app - GUI. It handles all the input the app get from 
 ## betterhealth.kv
 Creates the visual app - screens, buttons, labels and etc.
 
-#### The code is in master branch
+#### *The code is in master branch*
