@@ -24,15 +24,21 @@ def update_info(p_client_soc, p_name, data, db):
 
     doc_ref = db.collection(u'Names').document(p_name)
     dict_data = doc_ref.get().to_dict()
+    if dict_data is None:
+        curr_cal = "0"
+    else:
+        curr_cal = dict_data['current cal']
 
     # update the data dict
-    dict_data['height'] = data[0]
-    dict_data['weight'] = data[1]
-    dict_data['age'] = data[2]
-    dict_data['sex'] = data[3]
-    dict_data['ideal cal'] = calc_ideal_cal(data[0], data[1], data[2], data[3])
-    dict_data['preferences'] = p_preferences
-    dict_data['socket'] = str(p_client_soc)
+    dict_data = {'height': data[0],
+                 'weight': data[1],
+                 'age': data[2],
+                 'sex': data[3],
+                 'current cal': curr_cal,
+                 'ideal cal': calc_ideal_cal(data[0], data[1], data[2], data[3]),
+                 'user name': p_name,
+                 'preferences': p_preferences,
+                 'socket': str(p_client_soc)}
 
     # save the changes
     doc_ref.set(dict_data)
@@ -172,32 +178,8 @@ def sign_up(p_client_soc, p_name, db):
         p_client_soc.send(b"Username is taken.")
         return
 
-    # the username is not taken and can sign in
-    p_client_soc.send(b"Send data")
-    data = p_client_soc.recv(1024).decode().split(" ")
-
-    if data[0] == "error":
-        p_client_soc.send(b"Invalid.")
-        return
-
-    p_preferences = ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
-    for i in range(0, len(data) - 5):  # fill preferences arr
-        p_preferences[i] = data[i + 4]
-
-    dict_data = {'height': data[0],
-                 'weight': data[1],
-                 'age': data[2],
-                 'sex': data[3],
-                 'current cal': "0",
-                 'ideal cal': calc_ideal_cal(data[0], data[1], data[2], data[3]),
-                 'user name': p_name,
-                 'preferences': p_preferences,
-                 'socket': str(p_client_soc)}
-
-    doc_ref = db.collection(u"Names").document(p_name)
-    doc_ref.set(dict_data)
-
-    p_client_soc.send(b"Successfully signed up.")
+    p_client_soc.send(b"Good username")
+    return
 
 
 def log_in(p_client_soc, p_name, db):

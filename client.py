@@ -107,63 +107,13 @@ class SignUpScreen(Screen):
         else:
             send_to_server(CLIENT_SOC, ("sign" + " " + username))
             data_from_server = recv_from_server(CLIENT_SOC)
-            if "Send" in data_from_server:
+            if "Good" in data_from_server:
                 print(":)")
                 USERNAME = username
-                SM.current = 'sign info'
+                SM.current = 'update info'
             else:
                 print(":(")
                 self.error_lbl.text = "Username is taken."
-
-
-class SignInfoScreen(Screen):
-    global CLIENT_SOC, SM, USERNAME
-    user_age = ObjectProperty(None)
-    user_height = ObjectProperty(None)
-    user_weight = ObjectProperty(None)
-    user_sex = ObjectProperty(None)
-
-    def __init__(self, **kwargs):
-        super(SignInfoScreen, self).__init__(**kwargs)
-        self.error_lbl = self.ids['error_msg']
-
-    def pressed(self):
-        """
-        when pressing the submit button it sends data to the server - move to main screen if succeed
-        :return: None
-        """
-        user_age = self.user_age.text
-        user_height = self.user_height.text
-        user_weight = self.user_weight.text
-        user_sex = self.user_sex.text
-
-        # error state
-        if not (user_height.isnumeric() or user_weight.isnumeric() or user_age.isnumeric()):
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
-
-        elif not (user_sex == "f" or user_sex == "m"):
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
-
-        elif user_age == "" or user_height == "" or user_weight == "" or user_sex == "":
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
-
-        # good input
-        else:
-            user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
-            send_to_server(CLIENT_SOC, user_data)
-
-            data_from_server = recv_from_server(CLIENT_SOC)
-            if "Successfully" in data_from_server:
-                print(":)")
-
-                # update the server that we need the calories
-                update_calories(CLIENT_SOC)
-                SM.current = 'main'
-            else:
-                print(":(")
 
 
 class UpdateInfoScreen(Screen):
@@ -387,7 +337,6 @@ class BetterHealthApp(App):
         SM.add_widget(StartScreen(name='start'))
         SM.add_widget(LogInScreen(name='log in'))
         SM.add_widget(SignUpScreen(name='sign up'))
-        SM.add_widget(SignInfoScreen(name='sign info'))
         SM.add_widget(UpdateInfoScreen(name='update info'))
         SM.add_widget(MainScreen(name='main'))
         SM.add_widget(AddFoodScreen(name='food'))
