@@ -202,6 +202,7 @@ class UpdateInfoScreen(Screen):
 
         # good input
         else:
+            send_to_server(CLIENT_SOC, ("update" + " " + USERNAME))
             user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
             send_to_server(CLIENT_SOC, user_data)
 
@@ -300,7 +301,7 @@ class AddSportScreen(Screen):
         global CHOICE, CLIENT_SOC
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we entering food
+        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we entering sport
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
@@ -345,7 +346,6 @@ class MainScreen(Screen):
         and move to the update info screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("update" + " " + USERNAME))
         SM.current = 'update info'
 
     @staticmethod
@@ -399,7 +399,7 @@ def connect_to_server():
     # handle the connection to the server
     global CLIENT_SOC  # global var to save the client socket
     client_socket = socket.socket()
-    client_socket.connect(('10.0.0.26', 10000))  # connect to server in port 10000
+    client_socket.connect(('10.0.0.32', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
 
 

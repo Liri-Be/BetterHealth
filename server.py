@@ -324,17 +324,21 @@ def handle_client(c_soc, db):
 def main():
     open_sockets = []
 
+    # connect the server in port 10000, make it available for 10 clients
     server_socket = socket.socket()
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
+    # connect server to the database
     cred = credentials.Certificate(r".\sample-3ae1d-firebase-adminsdk-wzkym-7e9ac9fcc9.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 
-    th = threading.Thread(target=reset, args=(db,))  # make a thread that will take care of resetting the database
+    # make a thread that will take care of resetting the database
+    th = threading.Thread(target=reset, args=(db,))
     th.start()
 
+    # handle connections to the server - make new thread for each connection
     while True:
         (c_soc, address) = server_socket.accept()
         print("someone connected")
