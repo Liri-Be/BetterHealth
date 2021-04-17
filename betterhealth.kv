@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <StartScreen>:
     rows: 1
 
@@ -387,3 +388,394 @@
                 pos: 350, 75
                 background_color: 2, 0, 0, 1
                 on_press: root.pressed_submit()
+=======
+<StartScreen>:
+    rows: 1
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Button:
+            text: 'Log in'
+            on_press: root.pressed_log_in()
+
+        Button:
+            text: 'Sign up'
+            on_press: root.pressed_sign_up()
+
+        Button:
+            text: 'Exit'
+            on_press: root.pressed_exit()
+
+
+<LogInScreen>:
+
+    username: username
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 3
+
+        GridLayout:
+            size: 400, 400
+            cols: 2
+
+            Label:
+                text: "UserName:"
+                pos: 200, 450
+
+            TextInput:
+                id: username
+                multiline: False
+                pos: 225, 475
+                size: 600, 50
+
+        Label:
+            id: error_msg
+            text: ""
+
+        Button:
+            text: "Submit"
+            size: 100, 50
+            pos: 350, 200
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed()
+
+
+<SignUpScreen>:
+
+    username: username
+
+    GridLayout:
+        size: root.width, root.height
+        cols: 1
+
+        GridLayout:
+            size: 400, 400
+            cols: 2
+
+            Label:
+                text: "UserName (no spaces!):"
+                pos: 200, 450
+
+            TextInput:
+                id: username
+                multiline: False
+                pos: 225, 475
+                size: 600, 50
+
+        Label:
+            id: error_msg
+            text: ""
+
+        Button:
+            text: "Submit"
+            size: 100, 50
+            pos: 350, 200
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed()
+
+
+<SignInfoScreen>:
+
+    user_age: user_age
+    user_height: user_height
+    user_weight: user_weight
+    user_sex: user_sex
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 6
+
+        GridLayout:
+            cols: 2
+
+            Label:
+                text: "Age:"
+                pos: 200, 450
+
+            TextInput:
+                id: user_age
+                multiline: False
+                pos: 350, 475
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Height(cm):"
+                pos: 200, 350
+
+            TextInput:
+                id: user_height
+                multiline: False
+                pos: 350, 375
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Weight(kg):"
+                pos: 200, 250
+
+            TextInput:
+                id: user_weight
+                multiline: False
+                pos: 350, 275
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Sex(f/m):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_sex
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        Label:
+            id: error_msg
+            text: ""
+
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed()
+
+
+<MainScreen>:
+    cols: 1
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 8
+
+
+        GridLayout:
+            cols: 2
+
+            Label:
+                text: "Current calories:"
+                pos: 200, 450
+
+            Label:
+                id: current
+                text: ""
+                pos: 300, 450
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Ideal calories:"
+                pos: 200, 400
+
+            Label:
+                id: ideal
+                text: ""
+                pos: 300, 400
+
+        Button:
+            text: "Update Calories"
+            size: 400, 50
+            pos: 200, 350
+            on_press: root.update_calories()
+
+        Button:
+            text: "Add food"
+            size: 400, 50
+            pos: 200, 275
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_food()
+
+        Button:
+            text: "Add sport"
+            size: 400, 50
+            pos: 200, 200
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_sport()
+
+
+        Button:
+            text: "Update info"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_update()
+
+        Button:
+            text: "Exit"
+            size: 400, 50
+            pos: 200, 50
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_exit()
+
+
+<UpdateInfoScreen>:
+
+    user_age: user_age
+    user_height: user_height
+    user_weight: user_weight
+    user_sex: user_sex
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 6
+
+        GridLayout:
+            cols: 2
+
+            Label:
+                text: "Age:"
+                pos: 200, 450
+
+            TextInput:
+                id: user_age
+                multiline: False
+                pos: 350, 475
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Height(cm):"
+                pos: 200, 350
+
+            TextInput:
+                id: user_height
+                multiline: False
+                pos: 350, 375
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Weight(kg):"
+                pos: 200, 250
+
+            TextInput:
+                id: user_weight
+                multiline: False
+                pos: 350, 275
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Sex(f/m):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_sex
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        Label:
+            id: error_msg
+            text: ""
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed()
+
+
+<AddFoodScreen>
+
+    rows: 1
+    user_amount: user_amount
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Spinner:
+            id: spinner
+            text: "Choose type of food"
+            values: root.arr_food
+            on_text: root.pressed_spinner(spinner.text)
+
+        Label:
+            id: error_msg
+            text: ""
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter amount (grams):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()
+
+
+<AddSportScreen>
+
+    rows: 1
+    user_amount: user_amount
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Spinner:
+            id: spinner
+            text: "Choose type of sport"
+            values: root.arr_sport
+            on_text: root.pressed_spinner(spinner.text)
+
+        Label:
+            id: error_msg
+            text: ""
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter time (min):"
+                pos: 200, 150
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()
+>>>>>>> 3b52aa8f298b211ae55370e909c31194c138492c
