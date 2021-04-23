@@ -13,6 +13,10 @@
             on_press: root.pressed_sign_up()
 
         Button:
+            text: 'Instructions'
+            on_press: root.pressed_instru()
+
+        Button:
             text: 'Exit'
             on_press: root.pressed_exit()
 
@@ -30,8 +34,12 @@
             cols: 2
 
             Label:
-                text: "UserName:"
+                text: "Username:"
                 pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: username
@@ -42,6 +50,10 @@
         Label:
             id: error_msg
             text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
 
         Button:
             text: "Submit"
@@ -64,8 +76,12 @@
             cols: 2
 
             Label:
-                text: "UserName (no spaces!):"
+                text: "Username (no spaces!):"
                 pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: username
@@ -76,6 +92,10 @@
         Label:
             id: error_msg
             text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
 
         Button:
             text: "Submit"
@@ -86,6 +106,37 @@
 
 
 <MainScreen>:
+    cols: 1
+
+    BoxLayout:
+        orientation: 'vertical'
+
+        Button:
+            text: 'Calories'
+            on_press: root.pressed_cal()
+
+        Button:
+            text: 'Water'
+            on_press: root.pressed_water()
+
+        Button:
+            text: 'Sleep'
+            on_press: root.pressed_sleep()
+
+        Button:
+            text: 'Update info'
+            on_press: root.pressed_update()
+
+        Button:
+            text: 'Instructions'
+            on_press: root.pressed_instru()
+
+        Button:
+            text: 'Exit'
+            on_press: root.pressed_exit()
+
+
+<CalScreen>:
     cols: 1
 
     GridLayout:
@@ -99,27 +150,44 @@
             Label:
                 text: "Current calories:"
                 pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             Label:
-                id: current
+                id: current_cal
                 text: ""
                 pos: 300, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
         GridLayout:
             cols: 2
             Label:
                 text: "Ideal calories:"
                 pos: 200, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             Label:
-                id: ideal
+                id: ideal_cal
                 text: ""
                 pos: 300, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
         Button:
             text: "Update Calories"
             size: 400, 50
             pos: 200, 350
+            background_color: 0, 0, 0.5, 2
             on_press: root.update_calories()
 
         Button:
@@ -136,13 +204,187 @@
             background_color: 2, 0, 0, 1
             on_press: root.pressed_add_sport()
 
-
         Button:
-            text: "Update info"
+            text: "Instructions"
             size: 400, 50
             pos: 200, 125
             background_color: 2, 0, 0, 1
-            on_press: root.pressed_update()
+            on_press: root.pressed_instru()
+
+        Button:
+            text: "Main"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_main()
+
+        Button:
+            text: "Exit"
+            size: 400, 50
+            pos: 200, 50
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_exit()
+
+
+<WaterScreen>:
+    cols: 1
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 7
+
+
+        GridLayout:
+            cols: 2
+
+            Label:
+                text: "Current cups:"
+                pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            Label:
+                id: current_water
+                text: ""
+                pos: 300, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Ideal cups:"
+                pos: 200, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            Label:
+                id: ideal_water
+                text: ""
+                pos: 300, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+        Button:
+            text: "Update Cups"
+            size: 400, 50
+            pos: 200, 350
+            background_color: 0, 0, 0.5, 2
+            on_press: root.update_water()
+
+        Button:
+            text: "Add cups"
+            size: 400, 50
+            pos: 200, 275
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_cups()
+
+
+        Button:
+            text: "Instructions"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_instru()
+
+        Button:
+            text: "Main"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_main()
+
+        Button:
+            text: "Exit"
+            size: 400, 50
+            pos: 200, 50
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_exit()
+
+
+<SleepScreen>:
+    cols: 1
+
+    GridLayout:
+        size: root.width, root.height
+        rows: 7
+
+
+        GridLayout:
+            cols: 2
+
+            Label:
+                text: "Current hours:"
+                pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            Label:
+                id: current_sleep
+                text: ""
+                pos: 300, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Ideal hours:"
+                pos: 200, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            Label:
+                id: ideal_sleep
+                text: ""
+                pos: 300, 400
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+        Button:
+            text: "Update hours"
+            size: 400, 50
+            pos: 200, 350
+            background_color: 0, 0, 0.5, 2
+            on_press: root.update_sleep()
+
+        Button:
+            text: "Add hours"
+            size: 400, 50
+            pos: 200, 275
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_add_hours()
+
+
+        Button:
+            text: "Instructions"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_instru()
+
+        Button:
+            text: "Main"
+            size: 400, 50
+            pos: 200, 125
+            background_color: 2, 0, 0, 1
+            on_press: root.pressed_main()
 
         Button:
             text: "Exit"
@@ -169,6 +411,10 @@
             Label:
                 text: "Age:"
                 pos: 200, 450
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_age
@@ -181,6 +427,10 @@
             Label:
                 text: "Height(cm):"
                 pos: 200, 350
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_height
@@ -193,6 +443,10 @@
             Label:
                 text: "Weight(kg):"
                 pos: 200, 250
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_weight
@@ -205,6 +459,10 @@
             Label:
                 text: "Sex(f/m):"
                 pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_sex
@@ -215,6 +473,10 @@
         Label:
             id: error_msg
             text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
             size: 200, 200
@@ -245,12 +507,20 @@
         Label:
             id: error_msg
             text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
             cols: 2
             Label:
                 text: "Enter amount (grams):"
                 pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_amount
@@ -287,12 +557,20 @@
         Label:
             id: error_msg
             text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
             cols: 2
             Label:
                 text: "Enter time (min):"
                 pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
 
             TextInput:
                 id: user_amount
@@ -310,3 +588,406 @@
                 pos: 350, 75
                 background_color: 2, 0, 0, 1
                 on_press: root.pressed_submit()
+
+
+<AddCupsScreen>
+    rows: 1
+    user_amount: user_amount
+
+    GridLayout:
+        rows: 3
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter cups' amount:"
+                pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        Label:
+            id: error_msg
+            text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()
+
+
+<AddHoursScreen>
+    rows: 1
+    user_amount: user_amount
+
+    GridLayout:
+        rows: 3
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter hours' amount:"
+                pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            TextInput:
+                id: user_amount
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        Label:
+            id: error_msg
+            text: ""
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'center'
+            valign: 'middle'
+
+        GridLayout:
+            size: 200, 200
+            rows: 1
+
+            Button:
+                text: "Submit"
+                size: 100, 50
+                pos: 350, 75
+                background_color: 2, 0, 0, 1
+                on_press: root.pressed_submit()
+
+
+<StartInstructions>
+
+    GridLayout:
+        rows: 6
+
+        Label:
+            text: "[b][u]Log In:[/u][/b]\nIf you want to log in to the app, press the log in button and enter your username."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Sign up:[/u][/b]\nIf you want to sign up to the app, press the sign up button, enter your username and than you'll need to enter information about yourself such as height, weight, age and sex."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "To return to the previous screen press the button below."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        Button:
+            text: "Back"
+            on_press: root.pressed()
+
+
+<MainInstructions>
+
+    GridLayout:
+        rows: 8
+
+        Label:
+            text: "[b][u]Calories:[/u][/b]\nTo keep track on your calories, press the Calories button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Water:[/u][/b]\nTo keep track on the water you drink, press the Water button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Sleep:[/u][/b]\nTo keep track on the hours you sleep, press the Sleep button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Update Info:[/u][/b]\nTo update your info, press the Update Info button. Enter your new info. Press Submit in the end."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "To return to the previous screen press the button below."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        Button:
+            text: "Back"
+            on_press: root.pressed()
+
+
+<CalInstructionsOne>
+
+    GridLayout:
+        rows: 6
+
+        Label:
+            text: "[b][u]Update Calories:[/u][/b]\nTo see your current and ideal calories, press the update calories button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Add food:[/u][/b]\nTo add food you ate, press the add food button. Choose the food and the amount (grams) you have eaten. Press submit in the end."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Add sport:[/u][/b]\nTo add sport you did, press the add sport button. Choose the sport and the amount (min) you have done. Press submit in the end."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+
+        Label:
+            text: "To move to the next screen press Next, and to return to the cal screen press Cal."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        BoxLayout:
+            Button:
+                text: "Cal"
+                on_press: root.pressed_back()
+
+            Button:
+                text: "Next"
+                on_press: root.pressed_next()
+
+
+<CalInstructionsTwo>
+
+    GridLayout:
+        rows: 5
+
+        Label:
+            text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "To move to the previous instructions screen press Previous, and to return to the cal screen press Cal."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        BoxLayout:
+            Button:
+                text: "previous"
+                on_press: root.pressed_previous()
+
+            Button:
+                text: "Cal"
+                on_press: root.pressed_back()
+
+
+<WaterInstructions>
+    GridLayout:
+        rows: 7
+
+        Label:
+            text: "[b][u]Update Cups:[/u][/b]\nTo see your current and ideal cups, press the update cups button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Add cups:[/u][/b]\nTo add cups of water you drank, press the add cups button. Enter the cups' amount you drank. Press submit in the end."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "To return to the water screen press Water."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        Button:
+            text: "Water"
+            on_press: root.pressed_back()
+
+
+<SleepInstructions>
+    GridLayout:
+        rows: 7
+
+        Label:
+            text: "[b][u]Update Hours:[/u][/b]\nTo see your current and ideal cups, press the update cups button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Add hours:[/u][/b]\nTo add hours of sleep you slept, press the add hours button. Enter the hours' amount you slept. Press submit in the end."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+
+        Label:
+            text: "To return to the sleep screen press Sleep."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+
+        Button:
+            text: "Sleep"
+            on_press: root.pressed_back()
