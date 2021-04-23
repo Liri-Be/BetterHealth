@@ -719,7 +719,7 @@ class BetterHealthApp(App):
         return SM
 
 
-# functions to handle connections from server that aren't related to specific screen
+# functions to handle connections to server that aren't related to specific screen
 def connect_to_server():
     # handle the connection to the server
     global CLIENT_SOC  # global var to save the client socket
