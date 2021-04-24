@@ -26,8 +26,12 @@ def update_info(p_client_soc, p_name, data, db):
     dict_data = doc_ref.get().to_dict()
     if dict_data is None:
         curr_cal = "0"
+        curr_water = "0"
+        curr_sleep = "0"
     else:
         curr_cal = dict_data['current cal']
+        curr_water = dict_data['current water']
+        curr_sleep = dict_data['current sleep']
 
     # update the data dict
     dict_data = {'height': data[0],
@@ -38,6 +42,10 @@ def update_info(p_client_soc, p_name, data, db):
                  'ideal cal': calc_ideal_cal(data[0], data[1], data[2], data[3]),
                  'user name': p_name,
                  'preferences': p_preferences,
+                 'current water': curr_water,
+                 'ideal water': calc_ideal_water(data[3]),
+                 'current sleep': curr_sleep,
+                 'ideal sleep': calc_ideal_sleep(data[2]),
                  'socket': str(p_client_soc)}
 
     # save the changes
@@ -62,6 +70,35 @@ def calc_ideal_cal(p_height, p_weight, p_age, p_sex):
     return str(ideal)
 
 
+def calc_ideal_water(p_sex):
+    """
+    calculate the ideal amount of cups of water a person should drink a day
+    :param p_sex: the sex of the user
+    :return: the ideal amount of cups of water for a day - in string for the database
+    """
+    if p_sex == 'f':
+        return str(12)
+    return str(16)
+
+
+def calc_ideal_sleep(p_age):
+    """
+    calculate the ideal amount hours a person should sleep a day
+    :param p_age: the age of the user
+    :return: the ideal amount of hours of sleep for a day - in string for the database
+    """
+    p_age = int(p_age)
+    if p_age <= 13:
+        return "11:00"
+    if 14 <= p_age <= 17:
+        return "10:00"
+    if 18 <= p_age <= 25:
+        return "09:00"
+    if 26 <= p_age <= 64:
+        return "08:00"
+    return "07:00"
+
+
 def enter_food(p_client_soc, p_name, db):
     """
     add the calories from the food to the document of the user in the database and send to the server appropriate msg
@@ -81,6 +118,9 @@ def enter_food(p_client_soc, p_name, db):
     # good input
     p_food = data[0]
     p_amount = data[1]
+
+    if "_" in p_food:  # fix _ to space - the format in database
+        p_food = p_food.split("_")[0] + " " + p_food.split("_")[1]
 
     # get amount of calories
     cal = get_food(p_food, db)
@@ -140,6 +180,113 @@ def enter_sport(p_client_soc, p_name, db):
     p_client_soc.send(b"Finished.")
 
 
+def enter_water(p_client_soc, p_name, db):
+    """
+    add the water cups the user drank to the document of the user in the database and send to the server appropriate msg
+    :param p_client_soc: the client socket
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    # get data from user
+    data = p_client_soc.recv(1024).decode()
+
+    if "error" in data:  # error state
+        p_client_soc.send(b"Invalid.")
+        return
+
+    # get user data from database
+    doc_ref = db.collection(u'Names').document(p_name)
+    user_data = doc_ref.get().to_dict()
+
+    # put new data in database
+    curr_cups = int(user_data['current water']) + int(data)
+    user_data['current water'] = str(curr_cups)
+    doc_ref.set(user_data)
+    p_client_soc.send(b"Finished.")
+    return
+
+
+def enter_sleep(p_client_soc, p_name, db):
+    """
+    add the water cups the user drank to the document of the user in the database and send to the server appropriate msg
+    :param p_client_soc: the client socket
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    # get data from user
+    data = p_client_soc.recv(1024).decode()
+
+    if "error" in data:  # error state
+        p_client_soc.send(b"Invalid.")
+        return
+
+    start = data.split(" ")[0]  # start hour
+    finish = data.split(" ")[1]  # finish hour
+
+    # get user data from database
+    doc_ref = db.collection(u'Names').document(p_name)
+    user_data = doc_ref.get().to_dict()
+
+    # calc the hours of sleep
+    start_hour = start.split(":")[0]
+    start_min = start.split(":")[1]
+    finish_hour = finish.split(":")[0]
+    finish_min = finish.split(":")[1]
+
+    # check for errors
+    if not (start_hour.isnumeric() and start_min.isnumeric() and finish_hour.isnumeric() and finish_min.isnumeric()):
+        p_client_soc.send(b"Invalid.")
+        return
+
+    start_hour = int(start_hour)
+    start_min = int(start_min)
+    finish_hour = int(finish_hour)
+    finish_min = int(finish_min)
+
+    if start_hour > 23 or finish_hour > 23 or start_min > 59 or finish_min > 59:
+        p_client_soc.send(b"Invalid.")
+        return
+
+    # hours
+    if start_hour > 12:
+        hours_this_time = finish_hour + 24 - start_hour
+    else:
+        hours_this_time = finish_hour - start_hour
+
+    # minutes
+    if finish_min < start_min:
+        hours_this_time -= 1
+        min_this_time = finish_min + 60 - start_min
+    else:
+        min_this_time = finish_min - start_min
+
+    # fix for string
+    if hours_this_time < 10:
+        str_hours_this_time = "0" + str(hours_this_time)
+    else:
+        str_hours_this_time = str(hours_this_time)
+
+    if min_this_time < 10:
+        str_min_this_time = "0" + str(min_this_time)
+    else:
+        str_min_this_time = str(min_this_time)
+
+    # error
+    if hours_this_time < 0 or min_this_time < 0:
+        p_client_soc.send(b"Invalid.")
+        return
+
+    sleep_time = str_hours_this_time + ":" + str_min_this_time
+
+    # put new data in database
+    user_data['current sleep'] = sleep_time
+    doc_ref.set(user_data)
+    p_client_soc.send(b"Finished.")
+    return
+
+
 def reset(db):
     """
     reset the current calories when the day changes
@@ -156,6 +303,8 @@ def reset(db):
             for doc in coll_ref:
                 doc_dict = doc.to_dict()
                 doc_dict['current cal'] = "0"
+                doc_dict['current water'] = "0"
+                doc_dict['current sleep'] = "00:00"
                 username = doc_dict['user name']
                 doc_ref = db.collection(u'Names').document(username)
                 doc_ref.set(doc_dict)
@@ -266,6 +415,34 @@ def send_calories(p_client_soc, p_name, db):
     p_client_soc.send(data.encode())
 
 
+def send_water(p_client_soc, p_name, db):
+    """
+    sends the current and the ideal amount of water cups to the client
+    :param p_client_soc: the client soc
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    doc_ref = db.collection(u'Names').document(p_name)
+    dict_data = doc_ref.get().to_dict()
+    data = dict_data['current water'] + " " + dict_data['ideal water']
+    p_client_soc.send(data.encode())
+
+
+def send_sleep(p_client_soc, p_name, db):
+    """
+    sends the current and the ideal amount of sleep hours to the client
+    :param p_client_soc: the client soc
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    doc_ref = db.collection(u'Names').document(p_name)
+    dict_data = doc_ref.get().to_dict()
+    data = dict_data['current sleep'] + " " + dict_data['ideal sleep']
+    p_client_soc.send(data.encode())
+
+
 def handle_client(c_soc, db):
     """
     handles threads (clients) requests
@@ -289,8 +466,16 @@ def handle_client(c_soc, db):
                 info = c_soc.recv(1024).decode().split(" ")
                 print(info)
                 update_info(c_soc, username, info, db)
-            elif commend == "main":
+            elif commend == "cal":
                 send_calories(c_soc, username, db)
+            elif commend == "water":
+                send_water(c_soc, username, db)
+            elif commend == "sleep":
+                send_sleep(c_soc, username, db)
+            elif commend == "cups":
+                enter_water(c_soc, username, db)
+            elif commend == "hours":
+                enter_sleep(c_soc, username, db)
             elif commend == "food":
                 enter_food(c_soc, username, db)
             elif commend == "sport":
