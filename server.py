@@ -89,14 +89,14 @@ def calc_ideal_sleep(p_age):
     """
     p_age = int(p_age)
     if p_age <= 13:
-        return str(11)
+        return "11:00"
     if 14 <= p_age <= 17:
-        return str(10)
+        return "10:00"
     if 18 <= p_age <= 25:
-        return str(9)
+        return "09:00"
     if 26 <= p_age <= 64:
-        return str(8)
-    return str(7)
+        return "08:00"
+    return "07:00"
 
 
 def enter_food(p_client_soc, p_name, db):
@@ -222,16 +222,60 @@ def enter_sleep(p_client_soc, p_name, db):
         p_client_soc.send(b"Invalid.")
         return
 
+    start = data.split(" ")[0]  # start hour
+    finish = data.split(" ")[1]  # finish hour
+
     # get user data from database
     doc_ref = db.collection(u'Names').document(p_name)
     user_data = doc_ref.get().to_dict()
 
-    # put new data in database
-    if "." in data:
-        data = round(int(data.split(".")[0]) + int(data.split(".")[1]) / 10)
+    # calc the hours of sleep
+    start_hour = start.split(":")[0]
+    start_min = start.split(":")[1]
+    finish_hour = finish.split(":")[0]
+    finish_min = finish.split(":")[1]
 
-    curr_hours = int(user_data['current sleep']) + int(data)
-    user_data['current sleep'] = str(curr_hours)
+    if not (start_hour.isnumeric() and start_min.isnumeric() and finish_hour.isnumeric() and finish_min.isnumeric()):
+        p_client_soc.send(b"Invalid.")
+        return
+
+    start_hour = int(start_hour)
+    start_min = int(start_min)
+    finish_hour = int(finish_hour)
+    finish_min = int(finish_min)
+
+    # hours
+    if start_hour > 12:
+        hours_this_time = finish_hour + 24 - start_hour
+    else:
+        hours_this_time = finish_hour - start_hour
+
+    if hours_this_time < 10:
+        str_hours_this_time = "0" + str(hours_this_time)
+    else:
+        str_hours_this_time = str(hours_this_time)
+
+    # minutes
+    if finish_min < start_min:
+        hours_this_time -= 1
+        min_this_time = finish_min + 60 - start_min
+    else:
+        min_this_time = finish_min - start_min
+
+    if min_this_time < 10:
+        str_min_this_time = "0" + str(min_this_time)
+    else:
+        str_min_this_time = str(min_this_time)
+
+    # error
+    if hours_this_time < 0 or min_this_time < 0:
+        p_client_soc.send(b"Invalid.")
+        return
+
+    sleep_time = str_hours_this_time + ":" + str_min_this_time
+
+    # put new data in database
+    user_data['current sleep'] = sleep_time
     doc_ref.set(user_data)
     p_client_soc.send(b"Finished.")
     return
@@ -254,7 +298,7 @@ def reset(db):
                 doc_dict = doc.to_dict()
                 doc_dict['current cal'] = "0"
                 doc_dict['current water'] = "0"
-                doc_dict['current sleep'] = "0"
+                doc_dict['current sleep'] = "00:00"
                 username = doc_dict['user name']
                 doc_ref = db.collection(u'Names').document(username)
                 doc_ref.set(doc_dict)

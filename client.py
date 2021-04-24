@@ -678,7 +678,8 @@ class SleepScreen(Screen):
 
 
 class AddHoursScreen(Screen):
-    user_amount = ObjectProperty(None)
+    user_start = ObjectProperty(None)
+    user_finish = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(AddHoursScreen, self).__init__(**kwargs)
@@ -691,24 +692,34 @@ class AddHoursScreen(Screen):
         :return: None
         """
         global CLIENT_SOC
-        user_amount = self.user_amount.text
+        user_start = self.user_start.text
+        user_finish = self.user_finish.text
 
         send_to_server(CLIENT_SOC, ("hours" + " " + USERNAME))  # let the server know we entering hours
 
-        if user_amount == "" or not user_amount.isnumeric():  # error state
+        # error state
+        if user_start == "" or user_finish == "":
+            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
+            data_from_server = recv_from_server(CLIENT_SOC)
+            self.error_lbl.text = data_from_server
+            return
+
+        if ":" not in user_start or ":" not in user_finish:
             send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
             data_from_server = recv_from_server(CLIENT_SOC)
             self.error_lbl.text = data_from_server
             return
 
         # good input
-        send_to_server(CLIENT_SOC, user_amount)
+        send_to_server(CLIENT_SOC, (user_start + " " + user_finish))
         data = recv_from_server(CLIENT_SOC)
+
         if "Finished" in data:
             print(":)")
 
             # clear data from text input
-            self.user_amount.text = ""
+            self.user_start.text = ""
+            self.user_finish.text = ""
             self.error_lbl.text = ""
 
             # update the server that we need the calories

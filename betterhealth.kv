@@ -637,14 +637,15 @@
 
 <AddHoursScreen>
     rows: 1
-    user_amount: user_amount
+    user_start: user_start
+    user_finish: user_finish
 
     GridLayout:
-        rows: 3
+        rows: 4
         GridLayout:
             cols: 2
             Label:
-                text: "Enter hours' amount:"
+                text: "Enter when you went to sleep (hh:mm, 24 hour format):"
                 pos: 200, 150
                 text_size: root.width/2, None
                 size: self.texture_size
@@ -652,7 +653,23 @@
                 valign: 'middle'
 
             TextInput:
-                id: user_amount
+                id: user_start
+                multiline: False
+                pos: 350, 175
+                size: 400, 50
+
+        GridLayout:
+            cols: 2
+            Label:
+                text: "Enter when you woke up (hh:mm, 24 hour format):"
+                pos: 200, 150
+                text_size: root.width/2, None
+                size: self.texture_size
+                halign: 'center'
+                valign: 'middle'
+
+            TextInput:
+                id: user_finish
                 multiline: False
                 pos: 350, 175
                 size: 400, 50
@@ -953,7 +970,7 @@
             markup: True
 
         Label:
-            text: "[b][u]Add hours:[/u][/b]\nTo add hours of sleep you slept, press the add hours button. Enter the hours' amount you slept. Press submit in the end."
+            text: "[b][u]Add hours:[/u][/b]\nTo add sleep hours you slept, press the add hours button. Enter when you went to sleep and when you woke up. Press submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
