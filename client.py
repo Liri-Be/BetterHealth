@@ -727,7 +727,7 @@ class AddHoursScreen(Screen):
             SM.current = 'sleep'
         else:
             print(":(")
-            self.error_lbl.text = "error accord"
+            self.error_lbl.text = "Invalid."
 
 
 class SleepInstructions(Screen):
