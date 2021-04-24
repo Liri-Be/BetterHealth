@@ -34,7 +34,7 @@
             cols: 2
 
             Label:
-                text: "Username:"
+                text: "Username (no spaces!):"
                 pos: 200, 450
                 text_size: root.width/2, None
                 size: self.texture_size
@@ -110,6 +110,9 @@
 
     BoxLayout:
         orientation: 'vertical'
+
+        Label:
+            text: "Hello choose what you want to do:"
 
         Button:
             text: 'Calories'
