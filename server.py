@@ -235,6 +235,7 @@ def enter_sleep(p_client_soc, p_name, db):
     finish_hour = finish.split(":")[0]
     finish_min = finish.split(":")[1]
 
+    # check for errors
     if not (start_hour.isnumeric() and start_min.isnumeric() and finish_hour.isnumeric() and finish_min.isnumeric()):
         p_client_soc.send(b"Invalid.")
         return
@@ -244,16 +245,15 @@ def enter_sleep(p_client_soc, p_name, db):
     finish_hour = int(finish_hour)
     finish_min = int(finish_min)
 
+    if start_hour > 23 or finish_hour > 23 or start_min > 59 or finish_min > 59:
+        p_client_soc.send(b"Invalid.")
+        return
+
     # hours
     if start_hour > 12:
         hours_this_time = finish_hour + 24 - start_hour
     else:
         hours_this_time = finish_hour - start_hour
-
-    if hours_this_time < 10:
-        str_hours_this_time = "0" + str(hours_this_time)
-    else:
-        str_hours_this_time = str(hours_this_time)
 
     # minutes
     if finish_min < start_min:
@@ -261,6 +261,12 @@ def enter_sleep(p_client_soc, p_name, db):
         min_this_time = finish_min + 60 - start_min
     else:
         min_this_time = finish_min - start_min
+
+    # fix for string
+    if hours_this_time < 10:
+        str_hours_this_time = "0" + str(hours_this_time)
+    else:
+        str_hours_this_time = str(hours_this_time)
 
     if min_this_time < 10:
         str_min_this_time = "0" + str(min_this_time)
@@ -485,7 +491,7 @@ def handle_client(c_soc, db):
 def main():
     open_sockets = []
 
-    server_socket = socket.socket()
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
