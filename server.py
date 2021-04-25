@@ -491,7 +491,7 @@ def handle_client(c_soc, db):
 def main():
     open_sockets = []
 
-    server_socket = socket.socket()
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
