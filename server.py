@@ -289,7 +289,7 @@ def enter_sleep(p_client_soc, p_name, db):
 
 def reset(db):
     """
-    reset the current calories when the day changes
+    reset the current calories, cups of water and sleep hours when the day changes
     :param db: reference to the database
     :return: None
     """
@@ -443,6 +443,20 @@ def send_sleep(p_client_soc, p_name, db):
     p_client_soc.send(data.encode())
 
 
+def send_profile(p_client_soc, p_name, db):
+    """
+    sends the info of the user to the client
+    :param p_client_soc: the client soc
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    doc_ref = db.collection(u'Names').document(p_name)
+    dict_data = doc_ref.get().to_dict()
+    data = dict_data['age'] + " " + dict_data['height'] + " " + dict_data['weight'] + " " + dict_data['sex']
+    p_client_soc.send(data.encode())
+
+
 def handle_client(c_soc, db):
     """
     handles threads (clients) requests
@@ -472,6 +486,8 @@ def handle_client(c_soc, db):
                 send_water(c_soc, username, db)
             elif commend == "sleep":
                 send_sleep(c_soc, username, db)
+            elif commend == "profile":
+                send_profile(c_soc, username, db)
             elif commend == "cups":
                 enter_water(c_soc, username, db)
             elif commend == "hours":

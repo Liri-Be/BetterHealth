@@ -1,12 +1,11 @@
-from kivy.app import App
+from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, ListProperty
+from kivy.properties import ObjectProperty, ListProperty, StringProperty
 import socket
 
 # global vars
 CLIENT_SOC = ""  # the current client socket
-SM = ScreenManager()  # the screen manager of the app
 # data of the user
 USERNAME = ""
 CURRENT_CAL = ""
@@ -15,7 +14,10 @@ CURRENT_WATER = ""
 IDEAL_WATER = ""
 CURRENT_SLEEP = ""
 IDEAL_SLEEP = ""
-CHOICE = ""
+HEIGHT = ""
+WEIGHT = ""
+AGE = ""
+SEX = ""
 # the possible choices for user
 FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
                "Broccoli", "Butter", "Cabbage", "Cauliflower", "Celery", "Chicken", "Chocolate", "Cornflakes",
@@ -32,29 +34,26 @@ SPORT_VALUES = ["Basketball", "Bowling", "Cycling", "Dancing", "Gardening", "Gol
 class StartScreen(Screen):
     global CLIENT_SOC
 
-    @staticmethod
-    def pressed_log_in():
+    def pressed_log_in(self):
         """
         when pressing the login button it moves to login screen
         :return: None
         """
-        SM.current = 'log in'
+        self.manager.current = 'log in'
 
-    @staticmethod
-    def pressed_sign_up():
+    def pressed_sign_up(self):
         """
         when pressing the signup button it moves to signup screen
         :return: None
         """
-        SM.current = 'sign up'
+        self.manager.current = 'sign up'
 
-    @staticmethod
-    def pressed_instru():
+    def pressed_instru(self):
         """
         when pressing the instructions button it show the instructions of logging and signing to the app
         :return: None
         """
-        SM.current = 'start instru'
+        self.manager.current = 'start instru'
 
     @staticmethod
     def pressed_exit():
@@ -71,7 +70,7 @@ class StartScreen(Screen):
 
 
 class LogInScreen(Screen):
-    global CLIENT_SOC, SM
+    global CLIENT_SOC
     username = ObjectProperty(None)
 
     def __init__(self, **kwargs):
@@ -87,7 +86,7 @@ class LogInScreen(Screen):
         global USERNAME
         username = self.username.text
 
-        if " " in username:  # error state
+        if " " in username or username == "":  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + username))
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
@@ -102,7 +101,7 @@ class LogInScreen(Screen):
             update_calories(CLIENT_SOC)
             update_water(CLIENT_SOC)
             update_sleep(CLIENT_SOC)
-            SM.current = 'main'
+            self.manager.current = 'main'
 
         else:
             print(":(")
@@ -110,7 +109,7 @@ class LogInScreen(Screen):
 
 
 class SignUpScreen(Screen):
-    global CLIENT_SOC, SM
+    global CLIENT_SOC
     username = ObjectProperty(None)
 
     def __init__(self, **kwargs):
@@ -126,7 +125,7 @@ class SignUpScreen(Screen):
         global USERNAME
         username = self.username.text
 
-        if " " in username:  # error state
+        if " " in username or username == "":  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + username))
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
@@ -137,7 +136,7 @@ class SignUpScreen(Screen):
         if "Good" in data_from_server:
             print(":)")
             USERNAME = username
-            SM.current = 'update info'  # move to the screen where we get user's data
+            self.manager.current = 'update info'  # move to the screen where we get user's data
 
         else:
             print(":(")
@@ -145,60 +144,65 @@ class SignUpScreen(Screen):
 
 
 class StartInstructions(Screen):
-    global SM
-
-    @staticmethod
-    def pressed():
+    def pressed(self):
         """
         when pressing the back button it returns to the start screen
         :return: None
         """
-        SM.current = 'start'
+        self.manager.current = 'start'
 
 
 # main screen classes
 class MainScreen(Screen):
-    global SM, USERNAME
+    global USERNAME, CLIENT_SOC
 
-    @staticmethod
-    def pressed_cal():
+    username = StringProperty(USERNAME)
+
+    def update_username(self):
+        self.username = USERNAME
+
+    def pressed_cal(self):
         """
         when pressing the cal button it goes to the cal screen
         :return: None
         """
-        SM.current = 'cal'
+        self.manager.current = 'cal'
 
-    @staticmethod
-    def pressed_water():
+    def pressed_water(self):
         """
         when pressing the water button it goes to the water screen
         :return: None
         """
-        SM.current = 'water'
+        self.manager.current = 'water'
 
-    @staticmethod
-    def pressed_sleep():
+    def pressed_sleep(self):
         """
         when pressing the sleep button it goes to the sleep screen
         :return: None
         """
-        SM.current = 'sleep'
+        self.manager.current = 'sleep'
 
-    @staticmethod
-    def pressed_instru():
+    def pressed_profile(self):
+        """
+        when pressing the see profile button it goes to the profile screen
+        :return:
+        """
+        update_profile(CLIENT_SOC)
+        self.manager.current = 'profile'
+
+    def pressed_instru(self):
         """
         when pressing the instru button it goes to the instru screen
         :return: None
         """
-        SM.current = 'main instru'
+        self.manager.current = 'main instru'
 
-    @staticmethod
-    def pressed_update():
+    def pressed_update(self):
         """
         when pressing the update info button it goes to the update info screen
         :return: None
         """
-        SM.current = 'update info'
+        self.manager.current = 'update info'
 
     @staticmethod
     def pressed_exit():
@@ -215,7 +219,7 @@ class MainScreen(Screen):
 
 
 class UpdateInfoScreen(Screen):
-    global CLIENT_SOC, SM
+    global CLIENT_SOC
 
     # vars for user's data
     user_age = ObjectProperty(None)
@@ -272,7 +276,7 @@ class UpdateInfoScreen(Screen):
                 update_calories(CLIENT_SOC)
                 update_water(CLIENT_SOC)
                 update_sleep(CLIENT_SOC)
-                SM.current = 'main'
+                self.manager.current = 'main'
 
             else:
                 print(":(")
@@ -280,20 +284,49 @@ class UpdateInfoScreen(Screen):
 
 
 class MainInstructions(Screen):
-    global SM
-
-    @staticmethod
-    def pressed():
+    def pressed(self):
         """
         when pressing the back button it returns to the main screen
         :return: None
         """
-        SM.current = 'main'
+        self.manager.current = 'main'
+
+
+# profile screen
+class ProfileScreen(Screen):
+    global AGE, HEIGHT, WEIGHT, SEX, USERNAME
+
+    def __init__(self, **kwargs):
+        super(ProfileScreen, self).__init__(**kwargs)
+        self.username_lbl = self.ids['username']
+        self.age_lbl = self.ids['age']
+        self.height_lbl = self.ids['height']
+        self.weight_lbl = self.ids['weight']
+        self.sex_lbl = self.ids['sex']
+
+    def update_labels(self):
+        """
+        shows the currant info of the user
+        :return: None
+        """
+        self.username_lbl.text = "Username: " + USERNAME
+        self.age_lbl.text = "Age: " + AGE
+        self.height_lbl.text = "Height: " + HEIGHT + " (cm)"
+        self.weight_lbl.text = "Weight: " + WEIGHT + " (kg)"
+        self.sex_lbl.text = "Sex: " + SEX
+        return
+
+    def pressed_main(self):
+        """
+        when pressing the main button it moves to the main screen
+        :return: None
+        """
+        self.manager.current = 'main'
 
 
 # cal screen classes
 class CalScreen(Screen):
-    global CLIENT_SOC, SM, USERNAME, CURRENT_CAL, IDEAL_CAL
+    global CLIENT_SOC, USERNAME, CURRENT_CAL, IDEAL_CAL
 
     def __init__(self, **kwargs):
         super(CalScreen, self).__init__(**kwargs)
@@ -309,38 +342,34 @@ class CalScreen(Screen):
         self.ideal_lbl.text = IDEAL_CAL
         return
 
-    @staticmethod
-    def pressed_main():
+    def pressed_main(self):
         """
         when pressing the main button it moves to the main screen
         :return: None
         """
-        SM.current = 'main'
+        self.manager.current = 'main'
 
-    @staticmethod
-    def pressed_add_food():
+    def pressed_add_food(self):
         """
         when pressing the add food button it moves to the add food screen
         :return: None
         """
-        SM.current = 'food'
+        self.manager.current = 'food'
 
-    @staticmethod
-    def pressed_add_sport():
+    def pressed_add_sport(self):
         """
         when pressing the add sport button it moves to the add sport screen
         :return: None
         """
-        SM.current = 'sport'
+        self.manager.current = 'sport'
 
-    @staticmethod
-    def pressed_instru():
+    def pressed_instru(self):
         """
         when pressing the instructions button it shows the instructions of how to use the different actions that
         a user can take in the app, add sport or food and see current and ideal calories
         :return: None
         """
-        SM.current = 'cal instru one'
+        self.manager.current = 'cal instru one'
 
     @staticmethod
     def pressed_exit():
@@ -364,18 +393,17 @@ class AddFoodScreen(Screen):
     def __init__(self, **kwargs):
         super(AddFoodScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
+        self.choice = ""
 
     def pressed_spinner(self, choice):
         """
         when pressing the spinner it saves the choice the user made
         :return: None
         """
-        global CHOICE
-        self.error_lbl.text = str(choice)
         if " " in choice:  # fix spaces, server split data by spaces and we don't want to lose information
-            CHOICE = choice.split(" ")[0] + "_" + choice.split(" ")[1]
+            self.choice = choice.split(" ")[0] + "_" + choice.split(" ")[1]
         else:
-            CHOICE = choice
+            self.choice = choice
 
     def pressed_submit(self):
         """
@@ -383,7 +411,7 @@ class AddFoodScreen(Screen):
         and moves to main cal screen if succeed, else shows appropriate msg
         :return: None
         """
-        global CHOICE, CLIENT_SOC
+        global CLIENT_SOC, USERNAME
         user_amount = self.user_amount.text
 
         send_to_server(CLIENT_SOC, ("food" + " " + USERNAME))  # let the server know we entering food
@@ -394,7 +422,7 @@ class AddFoodScreen(Screen):
             return
 
         # good input
-        user_data = CHOICE + " " + user_amount
+        user_data = self.choice + " " + user_amount
         send_to_server(CLIENT_SOC, user_data)
         data = recv_from_server(CLIENT_SOC)
 
@@ -407,7 +435,7 @@ class AddFoodScreen(Screen):
 
             # update the server that we need the calories
             update_calories(CLIENT_SOC)
-            SM.current = 'cal'
+            self.manager.current = 'cal'
 
         else:
             print(":(")
@@ -422,15 +450,14 @@ class AddSportScreen(Screen):
     def __init__(self, **kwargs):
         super(AddSportScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
+        self.choice = ""
 
     def pressed_spinner(self, choice):
         """
         when pressing the spinner it save the choice the user made
         :return: None
         """
-        global CHOICE
-        self.error_lbl.text = str(choice)
-        CHOICE = choice
+        self.choice = choice
 
     def pressed_submit(self):
         """
@@ -438,7 +465,7 @@ class AddSportScreen(Screen):
         and moves to main cal screen if succeed, else shows appropriate msg
         :return: None
         """
-        global CHOICE, CLIENT_SOC
+        global CLIENT_SOC
         user_amount = self.user_amount.text
 
         send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we entering sport
@@ -449,7 +476,7 @@ class AddSportScreen(Screen):
             return
 
         # good input
-        user_data = CHOICE + " " + user_amount
+        user_data = self.choice + " " + user_amount
         send_to_server(CLIENT_SOC, user_data)
         data = recv_from_server(CLIENT_SOC)
 
@@ -462,7 +489,7 @@ class AddSportScreen(Screen):
 
             # update the server that we need the calories
             update_calories(CLIENT_SOC)
-            SM.current = 'cal'
+            self.manager.current = 'cal'
 
         else:
             print(":(")
@@ -470,48 +497,40 @@ class AddSportScreen(Screen):
 
 
 class CalInstructionsOne(Screen):
-    global SM
-
-    @staticmethod
-    def pressed_next():
+    def pressed_next(self):
         """
         when pressing the next button it goes to the next instru screen
         :return: None
         """
-        SM.current = 'cal instru two'
+        self.manager.current = 'cal instru two'
 
-    @staticmethod
-    def pressed_back():
+    def pressed_back(self):
         """
         when pressing the back button it returns to the cal screen
         :return: None
         """
-        SM.current = 'cal'
+        self.manager.current = 'cal'
 
 
 class CalInstructionsTwo(Screen):
-    global SM
-
-    @staticmethod
-    def pressed_previous():
+    def pressed_previous(self):
         """
         when pressing the previous button it returns to the first instru screen
         :return: None
         """
-        SM.current = 'cal instru one'
+        self.manager.current = 'cal instru one'
 
-    @staticmethod
-    def pressed_back():
+    def pressed_back(self):
         """
         when pressing the back button it returns to the cal screen
         :return: None
         """
-        SM.current = 'cal'
+        self.manager.current = 'cal'
 
 
 # water screen classes
 class WaterScreen(Screen):
-    global CLIENT_SOC, SM, USERNAME, CURRENT_WATER, IDEAL_WATER
+    global CLIENT_SOC, USERNAME, CURRENT_WATER, IDEAL_WATER
 
     def __init__(self, **kwargs):
         super(WaterScreen, self).__init__(**kwargs)
@@ -527,30 +546,27 @@ class WaterScreen(Screen):
         self.ideal_lbl.text = IDEAL_WATER
         return
 
-    @staticmethod
-    def pressed_main():
+    def pressed_main(self):
         """
         when pressing the main button it moves to the main screen
         :return: None
         """
-        SM.current = 'main'
+        self.manager.current = 'main'
 
-    @staticmethod
-    def pressed_add_cups():
+    def pressed_add_cups(self):
         """
         when pressing the add cups button it moves to the add cups screen
         :return: None
         """
-        SM.current = 'cups'
+        self.manager.current = 'cups'
 
-    @staticmethod
-    def pressed_instru():
+    def pressed_instru(self):
         """
         when pressing the instructions button it shows the instructions of how to use the different actions that
         a user can take in the app, add cups of water and see current and ideal water cups
         :return: None
         """
-        SM.current = 'water instru'
+        self.manager.current = 'water instru'
 
     @staticmethod
     def pressed_exit():
@@ -602,27 +618,24 @@ class AddCupsScreen(Screen):
 
             # update the server that we need the water cups
             update_water(CLIENT_SOC)
-            SM.current = 'water'
+            self.manager.current = 'water'
         else:
             print(":(")
             self.error_lbl.text = "error accord"
 
 
 class WaterInstructions(Screen):
-    global SM
-
-    @staticmethod
-    def pressed_back():
+    def pressed_back(self):
         """
         when pressing the back button it returns to the water screen
         :return: None
         """
-        SM.current = 'water'
+        self.manager.current = 'water'
 
 
 # sleep screen classes
 class SleepScreen(Screen):
-    global CLIENT_SOC, SM, USERNAME, CURRENT_SLEEP, IDEAL_SLEEP
+    global CLIENT_SOC, USERNAME, CURRENT_SLEEP, IDEAL_SLEEP
 
     def __init__(self, **kwargs):
         super(SleepScreen, self).__init__(**kwargs)
@@ -638,30 +651,27 @@ class SleepScreen(Screen):
         self.ideal_lbl.text = IDEAL_SLEEP
         return
 
-    @staticmethod
-    def pressed_main():
+    def pressed_main(self):
         """
         when pressing the main button it moves to the main screen
         :return: None
         """
-        SM.current = 'main'
+        self.manager.current = 'main'
 
-    @staticmethod
-    def pressed_add_hours():
+    def pressed_add_hours(self):
         """
         when pressing the add hours button it moves to the add hours screen
         :return: None
         """
-        SM.current = 'hours'
+        self.manager.current = 'hours'
 
-    @staticmethod
-    def pressed_instru():
+    def pressed_instru(self):
         """
         when pressing the instructions button it shows the instructions of how to use the different actions that
         a user can take in the app, add hours of sleep and see current and ideal sleep hours
         :return: None
         """
-        SM.current = 'sleep instru'
+        self.manager.current = 'sleep instru'
 
     @staticmethod
     def pressed_exit():
@@ -724,57 +734,56 @@ class AddHoursScreen(Screen):
 
             # update the server that we need the calories
             update_sleep(CLIENT_SOC)
-            SM.current = 'sleep'
+            self.manager.current = 'sleep'
         else:
             print(":(")
             self.error_lbl.text = "Invalid."
 
 
 class SleepInstructions(Screen):
-    global SM
-
-    @staticmethod
-    def pressed_back():
+    def pressed_back(self):
         """
         when pressing the back button it returns to the sleep screen
         :return: None
         """
-        SM.current = 'sleep'
+        self.manager.current = 'sleep'
 
 
 # the app
-class BetterHealthApp(App):
-    global SM
-
+class BetterHealthApp(MDApp):
     def build(self):
         """
         Build the different screens in the app
-        :return: SM, screen manager
+        :return: sm, screen manager
         """
+        sm = ScreenManager()  # the screen manager of the app
+        self.icon = 'heart-health.png'
         # start screen
-        SM.add_widget(StartScreen(name='start'))
-        SM.add_widget(LogInScreen(name='log in'))
-        SM.add_widget(SignUpScreen(name='sign up'))
-        SM.add_widget(StartInstructions(name='start instru'))
+        sm.add_widget(StartScreen(name='start'))
+        sm.add_widget(LogInScreen(name='log in'))
+        sm.add_widget(SignUpScreen(name='sign up'))
+        sm.add_widget(StartInstructions(name='start instru'))
         # main screen
-        SM.add_widget(MainScreen(name='main'))
-        SM.add_widget(UpdateInfoScreen(name='update info'))
-        SM.add_widget(MainInstructions(name='main instru'))
+        sm.add_widget(MainScreen(name='main'))
+        sm.add_widget(UpdateInfoScreen(name='update info'))
+        sm.add_widget(MainInstructions(name='main instru'))
+        # profile screen
+        sm.add_widget(ProfileScreen(name='profile'))
         # cal screen
-        SM.add_widget(CalScreen(name='cal'))
-        SM.add_widget(AddFoodScreen(name='food'))
-        SM.add_widget(AddSportScreen(name='sport'))
-        SM.add_widget(CalInstructionsOne(name='cal instru one'))
-        SM.add_widget(CalInstructionsTwo(name='cal instru two'))
+        sm.add_widget(CalScreen(name='cal'))
+        sm.add_widget(AddFoodScreen(name='food'))
+        sm.add_widget(AddSportScreen(name='sport'))
+        sm.add_widget(CalInstructionsOne(name='cal instru one'))
+        sm.add_widget(CalInstructionsTwo(name='cal instru two'))
         # water screen
-        SM.add_widget(WaterScreen(name='water'))
-        SM.add_widget(AddCupsScreen(name='cups'))
-        SM.add_widget(WaterInstructions(name='water instru'))
+        sm.add_widget(WaterScreen(name='water'))
+        sm.add_widget(AddCupsScreen(name='cups'))
+        sm.add_widget(WaterInstructions(name='water instru'))
         # sleep screen
-        SM.add_widget(SleepScreen(name='sleep'))
-        SM.add_widget(AddHoursScreen(name='hours'))
-        SM.add_widget(SleepInstructions(name='sleep instru'))
-        return SM
+        sm.add_widget(SleepScreen(name='sleep'))
+        sm.add_widget(AddHoursScreen(name='hours'))
+        sm.add_widget(SleepInstructions(name='sleep instru'))
+        return sm
 
 
 # functions to handle connections to server that aren't related to a specific screen
@@ -846,12 +855,32 @@ def update_sleep(client_socket):
         return
 
 
+def update_profile(client_socket):
+    """
+    update the info global variables with data from the server
+    :param client_socket: the client socket
+    :return: None
+    """
+    global CLIENT_SOC, AGE, HEIGHT, WEIGHT, SEX
+    if CLIENT_SOC == client_socket:
+        CLIENT_SOC.send(b"profile" + b" " + USERNAME.encode())
+        data = CLIENT_SOC.recv(1024).decode().split(" ")
+        AGE = data[0]
+        HEIGHT = data[1]
+        WEIGHT = data[2]
+        if data[3] == "f":
+            SEX = "female"
+        else:
+            SEX = "male"
+        return
+
+
 def main():
     global CLIENT_SOC  # global var to save the client socket
 
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('10.0.0.23', 10000))  # connect to server in port 10000
+    client_socket.connect(('10.0.0.130', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
 
     # start the application
