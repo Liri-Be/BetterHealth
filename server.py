@@ -551,10 +551,8 @@ def weekly_report(p_client_soc, p_name, db):
 
     # send data to client
     avg_data = str(avg_cal) + " " + str(avg_water) + " " + avg_sleep
-    p_client_soc.send(avg_data.encode())
-    p_client_soc.send(cal_arr_data.encode())
-    p_client_soc.send(water_arr_data.encode())
-    p_client_soc.send(sleep_arr_data.encode())
+    total_data = avg_data + "," + cal_arr_data + "," + water_arr_data + "," + sleep_arr_data
+    p_client_soc.send(total_data.encode())
     return
 
 
