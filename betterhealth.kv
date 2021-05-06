@@ -143,7 +143,7 @@
             text: "[b]Hello " + root.username + "[/b]"
             markup: True
             font_style: "H4"
-            pos_hint: {"center_x": 0.5, "center_y": 0.83}
+            pos_hint: {"center_x": 0.5, "center_y": 0.87}
             halign: 'center'
             valign: 'middle'
 
@@ -151,12 +151,12 @@
             text:"Choose what you want to do"
             font_style: "Subtitle1"
             theme_text_color: "Secondary"
-            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            pos_hint: {"center_x": 0.5, "center_y": 0.81}
             halign: 'center'
             valign: 'middle'
 
         MDList:
-            pos_hint: {"center_x": 0.5, "center_y": 0.33}
+            pos_hint: {"center_x": 0.5, "center_y": 0.37}
 
             OneLineAvatarIconListItem:
                 text: 'Calories'
@@ -192,6 +192,13 @@
 
                 IconLeftWidget:
                     icon: "update"
+
+            OneLineAvatarIconListItem:
+                text: 'Weekly report'
+                on_press: root.pressed_report()
+
+                IconLeftWidget:
+                    icon: "table"
 
             OneLineAvatarIconListItem:
                 text: 'Instructions'
@@ -267,17 +274,33 @@
                 halign: 'left'
                 valign: 'middle'
 
-            MDRectangleFlatIconButton:
-                text: "[color=#FFFFFF]Main[/color]"
-                markup: True
-                halign: 'center'
-                size_hint: (0.45, 0.075)
-                pos_hint: {"center_x": 0.5, "center_y": 0.10}
-                md_bg_color: 0, 0, 1, 1
-                icon: "home"
-                icon_color: 0.996, 0.996 ,0.996, 0
-                on_press: root.pressed_main()
+        MDFillRoundFlatIconButton:
+            text: "Main"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.27}
+            icon: "home"
+            on_press: root.pressed_main()
 
+
+<WeeklyReportScreen>
+    on_enter: root.update_statistics()
+
+    FloatLayout:
+        MDLabel:
+            text: "[b]Weekly report[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.93}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
+            text:"This is your report"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.87}
+            halign: 'center'
+            valign: 'middle'
 
 
 <CalScreen>:
@@ -906,7 +929,7 @@
             text:"[b]Instructions[/b]"
             markup: True
             font_style: "H4"
-            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            pos_hint: {"center_x": 0.5, "center_y": 0.94}
             halign: 'center'
             valign: 'middle'
 
@@ -917,7 +940,7 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.82}
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
 
         MDLabel:
             text: "[b][u]Water:[/u][/b]\nTo keep track on the water you drink, press the Water button."
@@ -926,7 +949,7 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.71}
+            pos_hint: {"center_x": 0.5, "center_y": 0.745}
 
         MDLabel:
             text: "[b][u]Sleep:[/u][/b]\nTo keep track on the hours you sleep, press the Sleep button."
@@ -935,7 +958,7 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.59}
+            pos_hint: {"center_x": 0.5, "center_y": 0.64}
 
         MDLabel:
             text: "[b][u]Update Info:[/u][/b]\nTo update your info, press the Update Info button. Enter your new info. Press Submit in the end."
@@ -944,7 +967,16 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.48}
+            pos_hint: {"center_x": 0.5, "center_y": 0.535}
+
+        MDLabel:
+            text: "[b][u]Weekly report:[/u][/b]\nTo see your weekly report, press the Weekly report button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.43}
 
         MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
@@ -953,7 +985,7 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.37}
+            pos_hint: {"center_x": 0.5, "center_y": 0.325}
 
         MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
@@ -962,7 +994,7 @@
             halign: 'left'
             valign: 'middle'
             markup: True
-            pos_hint: {"center_x": 0.5, "center_y": 0.26}
+            pos_hint: {"center_x": 0.5, "center_y": 0.22}
 
         MDLabel:
             text: "To return to the previous screen press the button below."
@@ -970,7 +1002,7 @@
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
-            pos_hint: {"center_x": 0.5, "center_y": 0.15}
+            pos_hint: {"center_x": 0.5, "center_y": 0.125}
 
         MDFillRoundFlatButton:
             text: "Back"

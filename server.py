@@ -1,6 +1,7 @@
 import socket
 import threading
 import time
+import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 
@@ -27,11 +28,18 @@ def update_info(p_client_soc, p_name, data, db):
     if dict_data is None:
         curr_cal = "0"
         curr_water = "0"
-        curr_sleep = "0"
+        curr_sleep = "00:00"
+        week_cal = ["0", "0", "0", "0", "0", "0", "0"]
+        week_water = ["0", "0", "0", "0", "0", "0", "0"]
+        week_sleep = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
+
     else:
         curr_cal = dict_data['current cal']
         curr_water = dict_data['current water']
         curr_sleep = dict_data['current sleep']
+        week_cal = dict_data['week_cal']
+        week_water = dict_data['week_water']
+        week_sleep = dict_data['week_sleep']
 
     # update the data dict
     dict_data = {'height': data[0],
@@ -46,6 +54,9 @@ def update_info(p_client_soc, p_name, data, db):
                  'ideal water': calc_ideal_water(data[3]),
                  'current sleep': curr_sleep,
                  'ideal sleep': calc_ideal_sleep(data[2]),
+                 'week_cal': week_cal,
+                 'week_water': week_water,
+                 'week_sleep': week_sleep,
                  'socket': str(p_client_soc)}
 
     # save the changes
@@ -289,7 +300,7 @@ def enter_sleep(p_client_soc, p_name, db):
 
 def reset(db):
     """
-    reset the current calories, cups of water and sleep hours when the day changes
+    reset the current calories, cups of water and sleep hours when the day changes and update weekly data
     :param db: reference to the database
     :return: None
     """
@@ -298,10 +309,26 @@ def reset(db):
         current_time = time.strftime("%H:%M", t)  # get the current time
         hour = int(current_time.split(":")[0])
         minute = int(current_time.split(":")[1])
-        if hour == 0 and 0 <= minute <= 2:  # if the day had passed, reset the current calories of the users
+        today_date = datetime.date.today().strftime("%d %m %Y")
+        day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() - 1
+
+        # if the day had passed, reset the current calories of the users and update week arrays
+        if hour == 0 and minute == 0:
             coll_ref = db.collection(u'Names').get()  # reference to the collection of users
             for doc in coll_ref:
                 doc_dict = doc.to_dict()
+
+                # handle different days
+                if day_ref == -1:
+                    doc_dict['week_cal'] = ["0", "0", "0", "0", "0", "0", "0"]
+                    doc_dict['week_water'] = ["0", "0", "0", "0", "0", "0", "0"]
+                    doc_dict['week_sleep'] = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
+                else:
+                    doc_dict['week_cal'][day_ref] = doc_dict['current cal']
+                    doc_dict['week_water'][day_ref] = doc_dict['current water']
+                    doc_dict['week_sleep'][day_ref] = doc_dict['current sleep']
+
+                # reset
                 doc_dict['current cal'] = "0"
                 doc_dict['current water'] = "0"
                 doc_dict['current sleep'] = "00:00"
@@ -457,6 +484,80 @@ def send_profile(p_client_soc, p_name, db):
     p_client_soc.send(data.encode())
 
 
+def weekly_report(p_client_soc, p_name, db):
+    """
+    get weekly report
+    :param p_client_soc: the client socket
+    :param p_name: the username
+    :param db: reference to the database
+    :return: None
+    """
+    doc_ref = db.collection(u'Names').document(p_name)
+    dict_data = doc_ref.get().to_dict()
+
+    # get data from database
+    cal_arr = dict_data['week_cal']
+    water_arr = dict_data['week_water']
+    sleep_arr = dict_data['week_sleep']
+    # initialize data to send
+    cal_arr_data = ""
+    water_arr_data = ""
+    sleep_arr_data = ""
+
+    # get curr day num
+    today_date = datetime.date.today().strftime("%d %m %Y")
+    day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1
+
+    # update arrays in current data
+    cal_arr[day_ref] = dict_data['current cal']
+    water_arr[day_ref] = dict_data['current water']
+    sleep_arr[day_ref] = dict_data['current sleep']
+
+    # calc avg cal
+    sum_amount = 0
+    for day in cal_arr:
+        sum_amount += int(day)
+        cal_arr_data += day + " "
+    avg_cal = round(sum_amount / day_ref)
+
+    # calc avg water cups
+    sum_amount = 0
+    for day in water_arr:
+        sum_amount += int(day)
+        water_arr_data += day + " "
+    avg_water = round(sum_amount / day_ref)
+
+    # calc avg sleep hours
+    sum_amount = 0
+    for day in sleep_arr:
+        sum_amount += int(day.split(":")[0])*60
+        sum_amount += int(day.split(":")[1])
+        sleep_arr_data += day + " "
+    avg_sleep_in_min = round(sum_amount / day_ref)  # the avg in minutes
+    # calc avg hour
+    avg_hour = round(avg_sleep_in_min / 60)
+    if avg_hour < 10:
+        avg_hour = "0" + str(avg_hour)
+    else:
+        avg_hour = str(avg_hour)
+    # calc avg min
+    avg_min = avg_sleep_in_min % 60
+    if avg_min < 10:
+        avg_min = "0" + str(avg_min)
+    else:
+        avg_min = str(avg_min)
+
+    avg_sleep = avg_hour + ":" + avg_min
+
+    # send data to client
+    avg_data = str(avg_cal) + " " + str(avg_water) + " " + avg_sleep
+    p_client_soc.send(avg_data.encode())
+    p_client_soc.send(cal_arr_data.encode())
+    p_client_soc.send(water_arr_data.encode())
+    p_client_soc.send(sleep_arr_data.encode())
+    return
+
+
 def handle_client(c_soc, db):
     """
     handles threads (clients) requests
@@ -488,6 +589,8 @@ def handle_client(c_soc, db):
                 send_sleep(c_soc, username, db)
             elif commend == "profile":
                 send_profile(c_soc, username, db)
+            elif commend == "report":
+                weekly_report(c_soc, username, db)
             elif commend == "cups":
                 enter_water(c_soc, username, db)
             elif commend == "hours":

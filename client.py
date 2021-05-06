@@ -1,7 +1,10 @@
+from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.properties import ObjectProperty, ListProperty, StringProperty
+from kivymd.uix.button import MDFillRoundFlatIconButton
+from kivymd.uix.datatables import MDDataTable
 import socket
 
 # global vars
@@ -204,6 +207,13 @@ class MainScreen(Screen):
         """
         self.manager.current = 'update info'
 
+    def pressed_report(self):
+        """
+        when pressing the weekly report button it goes to the weekly report screen
+        :return: None
+        """
+        self.manager.current = 'report'
+
     @staticmethod
     def pressed_exit():
         """
@@ -216,6 +226,37 @@ class MainScreen(Screen):
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
+
+
+class ProfileScreen(Screen):
+    global AGE, HEIGHT, WEIGHT, SEX, USERNAME
+
+    def __init__(self, **kwargs):
+        super(ProfileScreen, self).__init__(**kwargs)
+        self.username_lbl = self.ids['username']
+        self.age_lbl = self.ids['age']
+        self.height_lbl = self.ids['height']
+        self.weight_lbl = self.ids['weight']
+        self.sex_lbl = self.ids['sex']
+
+    def update_labels(self):
+        """
+        shows the currant info of the user
+        :return: None
+        """
+        self.username_lbl.text = "Username: " + USERNAME
+        self.age_lbl.text = "Age: " + AGE
+        self.height_lbl.text = "Height: " + HEIGHT + " (cm)"
+        self.weight_lbl.text = "Weight: " + WEIGHT + " (kg)"
+        self.sex_lbl.text = "Sex: " + SEX
+        return
+
+    def pressed_main(self):
+        """
+        when pressing the main button it moves to the main screen
+        :return: None
+        """
+        self.manager.current = 'main'
 
 
 class UpdateInfoScreen(Screen):
@@ -283,42 +324,80 @@ class UpdateInfoScreen(Screen):
                 self.error_lbl.text = "error accord"
 
 
+class WeeklyReportScreen(Screen):
+    global CLIENT_SOC, IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP
+    # vars for the report
+    avg_cal = StringProperty(None)
+    avg_water = StringProperty(None)
+    avg_sleep = StringProperty(None)
+    week_cal = ListProperty(None)
+    week_water = ListProperty(None)
+    week_sleep = ListProperty(None)
+
+    def update_statistics(self):
+        """
+        update all the info from the current week - daily cal, water and sleep amounts, avg amounts and ideal amounts
+        :return: None
+        """
+        global IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP
+        (avg, cal, water, sleep) = get_statistics(CLIENT_SOC)  # get the data from server
+        self.avg_cal = avg.split(" ")[0]
+        self.avg_water = avg.split(" ")[1]
+        self.avg_sleep = avg.split(" ")[2]
+        self.week_cal = cal.split(" ")
+        self.week_water = water.split(" ")
+        self.week_sleep = sleep.split(" ")
+
+        # make the table for the report
+        table = MDDataTable(pos_hint={"center_x": 0.5, "center_y": 0.47},
+                            size_hint=(0.75, 0.74),
+                            rows_num=9,
+                            column_data=[
+                                ("Day", dp(20)),
+                                ("Calories", dp(20)),
+                                ("Water cups", dp(20)),
+                                ("Sleep hours", dp(20))
+                            ],
+                            row_data=[
+                                ("Sunday", self.week_cal[0], self.week_water[0], self.week_sleep[0]),
+                                ("Monday", self.week_cal[1], self.week_water[1], self.week_sleep[1]),
+                                ("Tuesday", self.week_cal[2], self.week_water[2], self.week_sleep[2]),
+                                ("Wednesday", self.week_cal[3], self.week_water[3], self.week_sleep[3]),
+                                ("Thursday", self.week_cal[4], self.week_water[4], self.week_sleep[4]),
+                                ("Friday", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
+                                ("Saturday", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
+                                ("Avg", self.avg_cal, self.avg_water, self.avg_sleep),
+                                ("Ideal", IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP)
+                            ])
+
+        # button to get back to main
+        button = MDFillRoundFlatIconButton(text="Main",
+                                           pos_hint={"center_x": 0.5, "center_y": 0.05},
+                                           size_hint=(0.45, 0.075),
+                                           icon="home",
+                                           on_press=self.pressed_main
+                                           )
+
+        # add table and button to the screen
+        self.add_widget(table)
+        self.add_widget(button)
+        return
+
+    def pressed_main(self, arg):
+        """
+        when pressing the main button move to the main screen
+        :param arg: argument that the button gives
+        :return: None
+        """
+        print(arg)
+        self.manager.current = 'main'
+        return
+
+
 class MainInstructions(Screen):
     def pressed(self):
         """
         when pressing the back button it returns to the main screen
-        :return: None
-        """
-        self.manager.current = 'main'
-
-
-# profile screen
-class ProfileScreen(Screen):
-    global AGE, HEIGHT, WEIGHT, SEX, USERNAME
-
-    def __init__(self, **kwargs):
-        super(ProfileScreen, self).__init__(**kwargs)
-        self.username_lbl = self.ids['username']
-        self.age_lbl = self.ids['age']
-        self.height_lbl = self.ids['height']
-        self.weight_lbl = self.ids['weight']
-        self.sex_lbl = self.ids['sex']
-
-    def update_labels(self):
-        """
-        shows the currant info of the user
-        :return: None
-        """
-        self.username_lbl.text = "Username: " + USERNAME
-        self.age_lbl.text = "Age: " + AGE
-        self.height_lbl.text = "Height: " + HEIGHT + " (cm)"
-        self.weight_lbl.text = "Weight: " + WEIGHT + " (kg)"
-        self.sex_lbl.text = "Sex: " + SEX
-        return
-
-    def pressed_main(self):
-        """
-        when pressing the main button it moves to the main screen
         :return: None
         """
         self.manager.current = 'main'
@@ -765,10 +844,10 @@ class BetterHealthApp(MDApp):
         sm.add_widget(StartInstructions(name='start instru'))
         # main screen
         sm.add_widget(MainScreen(name='main'))
-        sm.add_widget(UpdateInfoScreen(name='update info'))
-        sm.add_widget(MainInstructions(name='main instru'))
-        # profile screen
         sm.add_widget(ProfileScreen(name='profile'))
+        sm.add_widget(UpdateInfoScreen(name='update info'))
+        sm.add_widget(WeeklyReportScreen(name='report'))
+        sm.add_widget(MainInstructions(name='main instru'))
         # cal screen
         sm.add_widget(CalScreen(name='cal'))
         sm.add_widget(AddFoodScreen(name='food'))
@@ -873,6 +952,22 @@ def update_profile(client_socket):
         else:
             SEX = "male"
         return
+
+
+def get_statistics(client_socket):
+    """
+    get from the user avg and daily amounts of cal, water cups and sleep hours
+    :param client_socket: the client socket
+    :return: dict of avg and daily amounts of cal, water cups and sleep hours
+    """
+    global CLIENT_SOC
+    if CLIENT_SOC == client_socket:
+        CLIENT_SOC.send(b"report" + b" " + USERNAME.encode())
+        avg = CLIENT_SOC.recv(1024).decode()
+        cal = CLIENT_SOC.recv(1024).decode()
+        water = CLIENT_SOC.recv(1024).decode()
+        sleep = CLIENT_SOC.recv(1024).decode()
+        return avg, cal, water, sleep
 
 
 def main():
