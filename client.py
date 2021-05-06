@@ -963,10 +963,11 @@ def get_statistics(client_socket):
     global CLIENT_SOC
     if CLIENT_SOC == client_socket:
         CLIENT_SOC.send(b"report" + b" " + USERNAME.encode())
-        avg = CLIENT_SOC.recv(1024).decode()
-        cal = CLIENT_SOC.recv(1024).decode()
-        water = CLIENT_SOC.recv(1024).decode()
-        sleep = CLIENT_SOC.recv(1024).decode()
+        tot_data = CLIENT_SOC.recv(1024).decode().split(",")
+        avg = tot_data[0]
+        cal = tot_data[1]
+        water = tot_data[2]
+        sleep = tot_data[3]
         return avg, cal, water, sleep
 
 
