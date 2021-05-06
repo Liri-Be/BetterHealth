@@ -350,11 +350,11 @@ class WeeklyReportScreen(Screen):
 
         # make the table for the report
         table = MDDataTable(pos_hint={"center_x": 0.5, "center_y": 0.47},
-                            size_hint=(0.95, 0.74),
+                            size_hint=(0.92, 0.74),
                             rows_num=9,
                             column_data=[
-                                ("Day", dp(10)),
-                                ("Calories", dp(14)),
+                                ("Day", dp(9)),
+                                ("Calories", dp(13.25)),
                                 ("Water cups", dp(18)),
                                 ("Sleep hours", dp(18))
                             ],
