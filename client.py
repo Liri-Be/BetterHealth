@@ -350,22 +350,22 @@ class WeeklyReportScreen(Screen):
 
         # make the table for the report
         table = MDDataTable(pos_hint={"center_x": 0.5, "center_y": 0.47},
-                            size_hint=(0.75, 0.74),
+                            size_hint=(0.95, 0.74),
                             rows_num=9,
                             column_data=[
-                                ("Day", dp(20)),
-                                ("Calories", dp(20)),
-                                ("Water cups", dp(20)),
-                                ("Sleep hours", dp(20))
+                                ("Day", dp(10)),
+                                ("Calories", dp(14)),
+                                ("Water cups", dp(18)),
+                                ("Sleep hours", dp(18))
                             ],
                             row_data=[
-                                ("Sunday", self.week_cal[0], self.week_water[0], self.week_sleep[0]),
-                                ("Monday", self.week_cal[1], self.week_water[1], self.week_sleep[1]),
-                                ("Tuesday", self.week_cal[2], self.week_water[2], self.week_sleep[2]),
-                                ("Wednesday", self.week_cal[3], self.week_water[3], self.week_sleep[3]),
-                                ("Thursday", self.week_cal[4], self.week_water[4], self.week_sleep[4]),
-                                ("Friday", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
-                                ("Saturday", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
+                                ("Sun.", self.week_cal[0], self.week_water[0], self.week_sleep[0]),
+                                ("Mon.", self.week_cal[1], self.week_water[1], self.week_sleep[1]),
+                                ("Tue.", self.week_cal[2], self.week_water[2], self.week_sleep[2]),
+                                ("Wed.", self.week_cal[3], self.week_water[3], self.week_sleep[3]),
+                                ("Thu.", self.week_cal[4], self.week_water[4], self.week_sleep[4]),
+                                ("Fri.", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
+                                ("Sat.", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
                                 ("Avg", self.avg_cal, self.avg_water, self.avg_sleep),
                                 ("Ideal", IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP)
                             ])
