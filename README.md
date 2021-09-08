@@ -24,5 +24,7 @@ It handles all the input the app get from the user and sends appropriate data to
 Creates the visual app - screens, buttons, labels and etc.
 
 ## The rest of the files
-The rest of the files are images that creates the app.
+The rest of the files are - 
+1. png files that are in the app.
+2. connection file to the database.
 
