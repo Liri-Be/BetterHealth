@@ -1,8 +1,7 @@
 # BetterHealth
 
-An app that track you calories in each day - 
-using socket connection and Kivy GUI - 
-written in python.
+An app that track you calories, sleeping hours and drinking water in each day.  
+Using socket connection and Kivy GUI. Written in python.
 
 ## Server part (server.py)
 The server handles all the actions on the app - 
