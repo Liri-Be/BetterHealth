@@ -75,10 +75,19 @@
             size_hint: (0.75, 0.05)
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
+        MDTextFieldRound:
+            id: password
+            icon_left: "eye-off"
+            hint_text: "Enter password (no spaces!)"
+            multiline: False
+            size_hint: (0.75, 0.05)
+            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            password: True
+
         MDFillRoundFlatButton:
             text: "Submit"
             size_hint: (0.45, 0.075)
-            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            pos_hint: {"center_x": 0.5, "center_y": 0.25}
             on_press: root.pressed()
 
         MDLabel:
@@ -119,10 +128,19 @@
             size_hint: (0.75, 0.05)
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
+        MDTextFieldRound:
+            id: password
+            icon_left: "eye-off"
+            hint_text: "Enter password (no spaces!)"
+            multiline: False
+            size_hint: (0.75, 0.05)
+            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            password: True
+
         MDFillRoundFlatButton:
             text: "Submit"
             size_hint: (0.45, 0.075)
-            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            pos_hint: {"center_x": 0.5, "center_y": 0.25}
             on_press: root.pressed()
 
         MDLabel:

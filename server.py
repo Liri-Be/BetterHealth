@@ -23,7 +23,7 @@ def update_info(p_client_soc, p_name, data, db):
     for i in range(0, len(data) - 5):  # fill preferences arr
         p_preferences[i] = data[i + 4]
 
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
     if dict_data is None:
         curr_cal = "0"
@@ -131,7 +131,7 @@ def enter_food(p_client_soc, p_name, db):
     p_amount = data[1]
 
     if "_" in p_food:  # fix _ to space - the format in database
-        p_food = p_food.split("_")[0] + " " + p_food.split("_")[1]
+        p_food = p_food.replace("_", " ")
 
     # get amount of calories
     cal = get_food(p_food, db)
@@ -141,7 +141,7 @@ def enter_food(p_client_soc, p_name, db):
         return
 
     cal_to_add = round(int(cal) * int(p_amount) / 100)
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     data = doc_ref.get().to_dict()
     current = int(data['current cal']) + cal_to_add
     data['current cal'] = str(current)
@@ -168,7 +168,7 @@ def enter_sport(p_client_soc, p_name, db):
     p_sport = data[0]
     p_amount = data[1]
 
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     data = doc_ref.get().to_dict()
     p_weight = data['weight']
 
@@ -207,7 +207,7 @@ def enter_water(p_client_soc, p_name, db):
         return
 
     # get user data from database
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     user_data = doc_ref.get().to_dict()
 
     # put new data in database
@@ -237,7 +237,7 @@ def enter_sleep(p_client_soc, p_name, db):
     finish = data.split(" ")[1]  # finish hour
 
     # get user data from database
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     user_data = doc_ref.get().to_dict()
 
     # calc the hours of sleep
@@ -314,7 +314,7 @@ def reset(db):
 
         # if the day had passed, reset the current calories of the users and update week arrays
         if hour == 0 and minute == 0:
-            coll_ref = db.collection(u'Names').get()  # reference to the collection of users
+            coll_ref = db.collection(u'UsersInfo').get()  # reference to the collection of users
             for doc in coll_ref:
                 doc_dict = doc.to_dict()
 
@@ -333,7 +333,7 @@ def reset(db):
                 doc_dict['current water'] = "0"
                 doc_dict['current sleep'] = "00:00"
                 username = doc_dict['user name']
-                doc_ref = db.collection(u'Names').document(username)
+                doc_ref = db.collection(u'UsersInfo').document(username)
                 doc_ref.set(doc_dict)
 
 
@@ -342,11 +342,12 @@ def suggestions():
     pass
 
 
-def sign_up(p_client_soc, p_name, db):
+def sign_up(p_client_soc, p_name, p_pass, db):
     """
     gets username from client, check if it's in the database, if not sign up, otherwise send appropriate msg
     :param p_client_soc: the client socket
     :param p_name: the username of the client user
+    :param p_pass: the password of the client user
     :param db: reference to the database
     :return: None
     """
@@ -354,14 +355,17 @@ def sign_up(p_client_soc, p_name, db):
         p_client_soc.send(b"Username is taken.")
         return
 
+    doc_ref = db.collection(u'Users').document(p_name)
+    doc_ref.set({'password': p_pass})  # save the password
     p_client_soc.send(b"Good username")
     return
 
 
-def log_in(p_client_soc, p_name, db):
+def log_in(p_client_soc, p_name, p_pass, db):
     """
     gets username from client, check if it's in the database, if so log in, otherwise send appropriate msg
     :param p_name: the username of the client user
+    :param p_pass: the password of the client user
     :param p_client_soc: the client socket
     :param db: reference to the database
     :return: None
@@ -371,11 +375,16 @@ def log_in(p_client_soc, p_name, db):
         return
 
     # username found
-    doc_ref = db.collection(u'Names').document(p_name)
-    doc_dict = doc_ref.get().to_dict()
-    doc_dict['socket'] = str(p_client_soc)
-    doc_ref.set(doc_dict)  # save the socket in the database
-    p_client_soc.send(b"Successfully log in.")
+    doc_ref_user = db.collection(u'Users').document(p_name)
+    doc_dict_user = doc_ref_user.get().to_dict()
+    doc_ref_info = db.collection(u'Users').document(p_name)
+    doc_dict_info = doc_ref_info.get().to_dict()
+    if doc_dict_user['password'] == p_pass:
+        doc_dict_info['socket'] = str(p_client_soc)
+        doc_ref_info.set(doc_dict_info)  # save the socket in the database
+        p_client_soc.send(b"Successfully log in.")
+    else:
+        p_client_soc.send(b"Wrong password.")
 
 
 def find_name(p_name, db):
@@ -385,7 +394,7 @@ def find_name(p_name, db):
     :param db: reference to the database
     :return True/False: True if the username in the database, and false otherwise
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'Users').document(p_name)
     doc = doc_ref.get()
     if doc.exists:
         return True
@@ -436,7 +445,7 @@ def send_calories(p_client_soc, p_name, db):
     :param db: reference to the database
     :return: None
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
     data = dict_data['current cal'] + " " + dict_data['ideal cal']
     p_client_soc.send(data.encode())
@@ -450,7 +459,7 @@ def send_water(p_client_soc, p_name, db):
     :param db: reference to the database
     :return: None
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
     data = dict_data['current water'] + " " + dict_data['ideal water']
     p_client_soc.send(data.encode())
@@ -464,7 +473,7 @@ def send_sleep(p_client_soc, p_name, db):
     :param db: reference to the database
     :return: None
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
     data = dict_data['current sleep'] + " " + dict_data['ideal sleep']
     p_client_soc.send(data.encode())
@@ -478,7 +487,7 @@ def send_profile(p_client_soc, p_name, db):
     :param db: reference to the database
     :return: None
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
     data = dict_data['age'] + " " + dict_data['height'] + " " + dict_data['weight'] + " " + dict_data['sex']
     p_client_soc.send(data.encode())
@@ -492,7 +501,7 @@ def weekly_report(p_client_soc, p_name, db):
     :param db: reference to the database
     :return: None
     """
-    doc_ref = db.collection(u'Names').document(p_name)
+    doc_ref = db.collection(u'UsersInfo').document(p_name)
     dict_data = doc_ref.get().to_dict()
 
     # get data from database
@@ -506,7 +515,7 @@ def weekly_report(p_client_soc, p_name, db):
 
     # get curr day num
     today_date = datetime.date.today().strftime("%d %m %Y")
-    day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1
+    day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 2
 
     # update arrays in current data
     cal_arr[day_ref] = dict_data['current cal']
@@ -572,9 +581,9 @@ def handle_client(c_soc, db):
             username = data[1]
 
             if commend == "log":
-                log_in(c_soc, username, db)
+                log_in(c_soc, username, data[2], db)
             elif commend == "sign":
-                sign_up(c_soc, username, db)
+                sign_up(c_soc, username, data[2], db)
             elif commend == "update":
                 info = c_soc.recv(1024).decode().split(" ")
                 print(info)
@@ -612,7 +621,7 @@ def main():
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
-    cred = credentials.Certificate(r".\sample-3ae1d-firebase-adminsdk-wzkym-7e9ac9fcc9.json")
+    cred = credentials.Certificate("fill here your json file")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 

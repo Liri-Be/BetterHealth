@@ -75,9 +75,12 @@ class StartScreen(Screen):
 class LogInScreen(Screen):
     global CLIENT_SOC
     username = ObjectProperty(None)
+    password = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(LogInScreen, self).__init__(**kwargs)
+        self.username = self.ids['username']
+        self.password = self.ids['password']
         self.error_lbl = self.ids['error_msg']
 
     def pressed(self):
@@ -88,13 +91,14 @@ class LogInScreen(Screen):
         """
         global USERNAME
         username = self.username.text
+        password = self.password.text
 
-        if " " in username or username == "":  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + username))
+        if " " in username or username == "" or " " in password or password == "":  # error state
+            send_to_server(CLIENT_SOC, ("error" + " " + username + " " + password))
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
 
-        send_to_server(CLIENT_SOC, ("log" + " " + username))  # modify the server we are logging in
+        send_to_server(CLIENT_SOC, ("log" + " " + username + " " + password))  # modify the server we are logging in
         data_from_server = recv_from_server(CLIENT_SOC)  # get answer whether we logged in or not
 
         if "Successfully" in data_from_server:
@@ -108,15 +112,18 @@ class LogInScreen(Screen):
 
         else:
             print(":(")
-            self.error_lbl.text = "Username has not found."
+            self.error_lbl.text = data_from_server  # "Username has not found."
 
 
 class SignUpScreen(Screen):
     global CLIENT_SOC
     username = ObjectProperty(None)
+    password = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super(SignUpScreen, self).__init__(**kwargs)
+        self.username = self.ids['username']
+        self.password = self.ids['password']
         self.error_lbl = self.ids['error_msg']
 
     def pressed(self):
@@ -127,13 +134,14 @@ class SignUpScreen(Screen):
         """
         global USERNAME
         username = self.username.text
+        password = self.password.text
 
-        if " " in username or username == "":  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + username))
+        if " " in username or username == "" or " " in password or password == "":  # error state
+            send_to_server(CLIENT_SOC, ("error" + " " + username + " " + password))
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
 
-        send_to_server(CLIENT_SOC, ("sign" + " " + username))
+        send_to_server(CLIENT_SOC, ("sign" + " " + username + " " + password))  # modify the server we are signing up
         data_from_server = recv_from_server(CLIENT_SOC)
 
         if "Good" in data_from_server:
