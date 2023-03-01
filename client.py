@@ -23,6 +23,7 @@ HEIGHT = ""
 WEIGHT = ""
 AGE = ""
 SEX = ""
+
 # the possible choices for user
 FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
                "Broccoli", "Butter", "Cabbage", "Cauliflower", "Celery", "Chicken", "Chocolate", "Cornflakes",
