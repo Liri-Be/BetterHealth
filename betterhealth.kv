@@ -164,7 +164,6 @@
             halign: 'center'
             valign: 'middle'
 
-
 <MainScreen>:
     on_enter: root.update_username()
 
@@ -608,6 +607,7 @@
                 IconLeftWidget:
                     icon: "home"
 
+
             OneLineAvatarIconListItem:
                 text: 'Exit'
                 on_press: root.pressed_exit()
@@ -622,6 +622,7 @@
     user_height: user_height
     user_weight: user_weight
     user_sex: user_sex
+
 
     FloatLayout:
         MDLabel:
@@ -809,7 +810,6 @@
             halign: 'center'
             valign: 'middle'
 
-
 <AddCupsScreen>
     user_amount: user_amount
 
@@ -855,7 +855,6 @@
             size: self.texture_size
             halign: 'center'
             valign: 'middle'
-
 
 <AddHoursScreen>
     user_start: user_start
@@ -1339,6 +1338,7 @@
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+
             pos_hint: {"center_x": 0.5, "center_y": 0.20}
 
         MDFillRoundFlatButton:

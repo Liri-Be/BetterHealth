@@ -22,6 +22,7 @@ HEIGHT = ""
 WEIGHT = ""
 AGE = ""
 SEX = ""
+
 # the possible choices for user
 FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
                "Broccoli", "Butter", "Cabbage", "Cauliflower", "Celery", "Chicken", "Chocolate", "Cornflakes",
@@ -58,6 +59,14 @@ class StartScreen(Screen):
         :return: None
         """
         self.manager.current = 'start instru'
+
+    @staticmethod
+    def pressed_instru():
+        """
+        when pressing the instructions button it show the instructions of logging and signing to the app
+        :return: None
+        """
+        SM.current = 'start instru'
 
     @staticmethod
     def pressed_exit():
@@ -1001,6 +1010,7 @@ def main():
     # connect to server
     client_socket = socket.socket()
     client_socket.connect(('server ip', 10000))  # connect to server in port 10000
+
     CLIENT_SOC = client_socket
 
     # start the application

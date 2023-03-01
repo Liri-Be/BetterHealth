@@ -32,7 +32,6 @@ def update_info(p_client_soc, p_name, data, db):
         week_cal = ["0", "0", "0", "0", "0", "0", "0"]
         week_water = ["0", "0", "0", "0", "0", "0", "0"]
         week_sleep = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
-
     else:
         curr_cal = dict_data['current cal']
         curr_water = dict_data['current water']
