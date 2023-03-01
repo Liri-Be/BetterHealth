@@ -2,11 +2,12 @@ from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import ObjectProperty, ListProperty, StringProperty
+from kivy.properties import ObjectProperty, ListProperty, StringProperty, BooleanProperty
 from kivymd.uix.button import MDFillRoundFlatIconButton
 from kivymd.uix.datatables import MDDataTable
 import socket
 from hashlib import sha256
+from kivymd.uix.textfield import MDTextField
 
 # global vars
 CLIENT_SOC = socket.socket()  # the current client socket
@@ -168,6 +169,43 @@ class StartInstructions(Screen):
         :return: None
         """
         self.manager.current = 'start'
+
+
+# MDTextField but for passwords, better version (fletcher)!
+class MDTextFieldPassword(MDTextField):
+    password_mode = BooleanProperty(True)
+
+    def on_touch_down(self, touch):
+        """
+        when we press the password bar, check if we pressed the eye icon and make the password visible or invisible
+        according to the state it is right now
+        :param touch: object of the place we pressed now
+        :return: superclass
+        """
+        if self.collide_point(*touch.pos):
+            if self.icon_left:
+                # icon position based on the KV code for MDTextField - stackoverflow!
+                up_bound_x = self.x + self._icon_left_label.texture_size[1] + dp(8)
+                down_bound_x = self.x + dp(8)
+                up_bound_y = self.center[1] + self._icon_left_label.texture_size[1] / 2
+                down_bound_y = self.center[1] - self._icon_left_label.texture_size[1] / 2
+
+                # check if pressed in the range of the icon
+                if down_bound_x < touch.pos[0] < up_bound_x and down_bound_y < touch.pos[1] < up_bound_y:
+                    # if pressed - switch between on and off :)
+                    if self.password_mode:  # now on -> off (password visible)
+                        self.icon_left = 'eye'
+                        self.password_mode = False
+                        self.password = self.password_mode
+                    else:  # now off -> on (password invisible)
+                        self.icon_left = 'eye-off'
+                        self.password_mode = True
+                        self.password = self.password_mode
+
+        return super(MDTextFieldPassword, self).on_touch_down(touch)
+
+    def set_cursor(self, pos, dt):
+        self.cursor = pos
 
 
 # main screen classes
@@ -987,7 +1025,10 @@ def get_statistics(client_socket):
     global CLIENT_SOC
     if CLIENT_SOC == client_socket:
         CLIENT_SOC.send(b"report" + b" " + USERNAME.encode())
-        tot_data = CLIENT_SOC.recv(1024).decode().split(",")
+        tot_data = []  # CLIENT_SOC.recv(1024).decode().split(",")
+        for _ in range(4):
+            tot_data.append(CLIENT_SOC.recv(1024).decode())
+            CLIENT_SOC.send("good".encode())
         avg = tot_data[0]
         cal = tot_data[1]
         water = tot_data[2]
@@ -1000,7 +1041,7 @@ def main():
 
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('server ip', 10000))  # connect to server in port 10000
+    client_socket.connect(('10.0.0.18', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
 
     # start the application
