@@ -32,6 +32,7 @@ def update_info(p_client_soc, p_name, data, db):
         week_cal = ["0", "0", "0", "0", "0", "0", "0"]
         week_water = ["0", "0", "0", "0", "0", "0", "0"]
         week_sleep = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
+
     else:
         curr_cal = dict_data['current cal']
         curr_water = dict_data['current water']
@@ -560,7 +561,10 @@ def weekly_report(p_client_soc, p_name, db):
     # send data to client
     avg_data = str(avg_cal) + " " + str(avg_water) + " " + avg_sleep
     total_data = avg_data + "," + cal_arr_data + "," + water_arr_data + "," + sleep_arr_data
-    p_client_soc.send(total_data.encode())
+    for part in total_data.split(","):
+        p_client_soc.send(part.encode())
+        print(p_client_soc.recv(1024).decode())  # response for checking it got to client
+    # p_client_soc.send(total_data.encode())
     return
 
 
@@ -620,7 +624,7 @@ def main():
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
-    cred = credentials.Certificate("enter json name")
+    cred = credentials.Certificate(r".\mytest-edf1e-firebase-adminsdk-y9wff-a7284e6f22.json")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 
