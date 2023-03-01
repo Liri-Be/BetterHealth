@@ -1,156 +1,361 @@
 <StartScreen>:
     rows: 1
+    canvas.before:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'StartScreen.png'
 
-    BoxLayout:
-        orientation: 'vertical'
+    FloatLayout:
+        BoxLayout:
+            size_hint: (0.75, 0.4)
+            pos_hint: {'center_x':0.5, 'center_y':0.4}
+            orientation: 'vertical'
 
-        Button:
-            text: 'Log in'
-            on_press: root.pressed_log_in()
+            MDFillRoundFlatIconButton:
+                text: 'Log in'
+                size_hint: (1, 0.2)
+                icon: "login-variant"
+                on_press: root.pressed_log_in()
 
-        Button:
-            text: 'Sign up'
-            on_press: root.pressed_sign_up()
+            MDLabel:
+                size_hint: (1, 0.05)
 
-        Button:
-            text: 'Instructions'
-            on_press: root.pressed_instru()
+            MDFillRoundFlatIconButton:
+                text: 'Sign up'
+                size_hint: (1, 0.2)
+                icon: "login-variant"
+                on_press: root.pressed_sign_up()
 
-        Button:
-            text: 'Exit'
-            on_press: root.pressed_exit()
+            MDLabel:
+                size_hint: (1, 0.05)
+
+            MDFillRoundFlatIconButton:
+                text: 'Instructions'
+                size_hint: (1, 0.2)
+                icon: "menu"
+                on_press: root.pressed_instru()
+
+            MDLabel:
+                size_hint: (1, 0.05)
+
+            MDFillRoundFlatIconButton:
+                text: 'Exit'
+                size_hint: (1, 0.2)
+                icon: "logout-variant"
+                on_press: root.pressed_exit()
 
 
 <LogInScreen>:
 
     username: username
 
-    GridLayout:
-        size: root.width, root.height
-        rows: 3
+    FloatLayout:
+        MDLabel:
+            text:"[b]Log in[/b]"
+            markup: True
+            font_style: "H3"
+            pos_hint: {"center_x": 0.5, "center_y": 0.75}
+            halign: 'center'
+            valign: 'middle'
 
-        GridLayout:
-            size: 400, 400
-            cols: 2
+        MDLabel:
+            text:"Welcome back :)"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.67}
+            halign: 'center'
+            valign: 'middle'
 
-            Label:
-                text: "Username (no spaces!):"
-                pos: 200, 450
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDTextField:
+            mode: "round"
+            id: username
+            icon_left: "account"
+            hint_text: "Enter username (no spaces!)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-            TextInput:
-                id: username
-                multiline: False
-                pos: 225, 475
-                size: 600, 50
+        MDTextField:
+            mode: "round"
+            id: password
+            icon_left: "eye-off"
+            hint_text: "Enter password (no spaces!)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            password: True
 
-        Label:
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.25}
+            on_press: root.pressed()
+
+        MDLabel:
             id: error_msg
             text: ""
             text_size: root.width, None
             size: self.texture_size
+            pos_hint: {"center_x": 0.5, "center_y": 0.37}
             halign: 'center'
             valign: 'middle'
-
-        Button:
-            text: "Submit"
-            size: 100, 50
-            pos: 350, 200
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed()
 
 
 <SignUpScreen>:
-
     username: username
 
-    GridLayout:
-        size: root.width, root.height
-        cols: 1
+    FloatLayout:
+        MDLabel:
+            text:"[b]Sign up[/b]"
+            markup: True
+            font_style: "H3"
+            pos_hint: {"center_x": 0.5, "center_y": 0.75}
+            halign: 'center'
+            valign: 'middle'
 
-        GridLayout:
-            size: 400, 400
-            cols: 2
+        MDLabel:
+            text:"Thanks for joining the app :)"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.67}
+            halign: 'center'
+            valign: 'middle'
 
-            Label:
-                text: "Username (no spaces!):"
-                pos: 200, 450
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDTextField:
+            mode: "round"
+            id: username
+            icon_left: "account"
+            hint_text: "Enter username (no spaces!)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-            TextInput:
-                id: username
-                multiline: False
-                pos: 225, 475
-                size: 600, 50
+        MDTextField:
+            mode: "round"
+            id: password
+            icon_left: "eye-off"
+            hint_text: "Enter password (no spaces!)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+            password: True
 
-        Label:
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.25}
+            on_press: root.pressed()
+
+        MDLabel:
             id: error_msg
             text: ""
             text_size: root.width, None
             size: self.texture_size
+            pos_hint: {"center_x": 0.5, "center_y": 0.37}
             halign: 'center'
             valign: 'middle'
 
-        Button:
-            text: "Submit"
-            size: 100, 50
-            pos: 350, 200
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed()
-
-
 <MainScreen>:
-    cols: 1
+    on_enter: root.update_username()
 
-    BoxLayout:
-        orientation: 'vertical'
+    FloatLayout:
+        MDLabel:
+            text: "[b]Hello " + root.username + "[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.87}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
-            text: "Hello choose what you want to do:"
+        MDLabel:
+            text:"Choose what you want to do"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.81}
+            halign: 'center'
+            valign: 'middle'
 
-        Button:
-            text: 'Calories'
-            on_press: root.pressed_cal()
+        MDList:
+            pos_hint: {"center_x": 0.5, "center_y": 0.37}
 
-        Button:
-            text: 'Water'
-            on_press: root.pressed_water()
+            OneLineAvatarIconListItem:
+                text: 'Calories'
+                on_press: root.pressed_cal()
 
-        Button:
-            text: 'Sleep'
-            on_press: root.pressed_sleep()
+                IconLeftWidget:
+                    icon: "food"
 
-        Button:
-            text: 'Update info'
-            on_press: root.pressed_update()
+            OneLineAvatarIconListItem:
+                text: 'Water'
+                on_press: root.pressed_water()
 
-        Button:
-            text: 'Instructions'
-            on_press: root.pressed_instru()
+                IconLeftWidget:
+                    icon: "cup-water"
 
-        Button:
-            text: 'Exit'
-            on_press: root.pressed_exit()
+            OneLineAvatarIconListItem:
+                text: 'Sleep'
+                on_press: root.pressed_sleep()
+
+                IconLeftWidget:
+                    icon: "sleep"
+
+            OneLineAvatarIconListItem:
+                text: 'See profile'
+                on_press: root.pressed_profile()
+
+                IconLeftWidget:
+                    icon: "face-man-profile"
+
+            OneLineAvatarIconListItem:
+                text: 'Update info'
+                on_press: root.pressed_update()
+
+                IconLeftWidget:
+                    icon: "update"
+
+            OneLineAvatarIconListItem:
+                text: 'Weekly report'
+                on_press: root.pressed_report()
+
+                IconLeftWidget:
+                    icon: "table"
+
+            OneLineAvatarIconListItem:
+                text: 'Instructions'
+                on_press: root.pressed_instru()
+
+                IconLeftWidget:
+                    icon: "menu"
+
+            OneLineAvatarIconListItem:
+                text: 'Exit'
+                on_press: root.pressed_exit()
+
+                IconLeftWidget:
+                    icon: "logout-variant"
+
+
+<ProfileScreen>
+    on_enter: root.update_labels()
+
+    FloatLayout:
+        MDLabel:
+            text: "[b]Profile information[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.83}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
+            text:"This is your data"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
+
+        FloatLayout:
+            size_hint: (0.75, 0.75)
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
+
+            MDLabel:
+                text: ""
+                id: username
+                pos_hint: {"center_x": 0.6, "center_y": 0.65}
+                halign: 'left'
+                valign: 'middle'
+
+            MDLabel:
+                text: ""
+                id: age
+                pos_hint: {"center_x": 0.6, "center_y": 0.55}
+                halign: 'left'
+                valign: 'middle'
+
+            MDLabel:
+                text: ""
+                id: height
+                pos_hint: {"center_x": 0.6, "center_y": 0.45}
+                halign: 'left'
+                valign: 'middle'
+
+            MDLabel:
+                text: ""
+                id: weight
+                pos_hint: {"center_x": 0.6, "center_y": 0.35}
+                halign: 'left'
+                valign: 'middle'
+
+            MDLabel:
+                text: ""
+                id: sex
+                pos_hint: {"center_x": 0.6, "center_y": 0.25}
+                halign: 'left'
+                valign: 'middle'
+
+        MDFillRoundFlatIconButton:
+            text: "Main"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.27}
+            icon: "home"
+            on_press: root.pressed_main()
+
+
+<WeeklyReportScreen>
+    on_enter: root.update_statistics()
+
+    FloatLayout:
+        MDLabel:
+            text: "[b]Weekly report[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.93}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
+            text:"This is your report"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.87}
+            halign: 'center'
+            valign: 'middle'
 
 
 <CalScreen>:
-    cols: 1
+    on_enter: root.update_calories()
 
-    GridLayout:
-        size: root.width, root.height
-        rows: 8
+    FloatLayout:
+        MDLabel:
+            text: "[b]Calories screen[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
+            halign: 'center'
+            valign: 'middle'
 
+        MDLabel:
+            text: "You can see your current and ideal calories number, add food and sport"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
+            pos_hint: {"center_x": 0.5, "center_y": 0.65}
             cols: 2
-
-            Label:
+            MDLabel:
                 text: "Current calories:"
                 pos: 200, 450
                 text_size: root.width/2, None
@@ -158,7 +363,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: current_cal
                 text: ""
                 pos: 300, 450
@@ -168,8 +373,9 @@
                 valign: 'middle'
 
         GridLayout:
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
             cols: 2
-            Label:
+            MDLabel:
                 text: "Ideal calories:"
                 pos: 200, 400
                 text_size: root.width/2, None
@@ -177,7 +383,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: ideal_cal
                 text: ""
                 pos: 300, 400
@@ -186,61 +392,69 @@
                 halign: 'center'
                 valign: 'middle'
 
-        Button:
-            text: "Update Calories"
-            size: 400, 50
-            pos: 200, 350
-            background_color: 0, 0, 0.5, 2
-            on_press: root.update_calories()
+        MDList:
+            pos_hint: {"center_x": 0.5, "center_y": 0.24}
 
-        Button:
-            text: "Add food"
-            size: 400, 50
-            pos: 200, 275
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_add_food()
+            OneLineAvatarIconListItem:
+                text: 'Add food'
+                on_press: root.pressed_add_food()
 
-        Button:
-            text: "Add sport"
-            size: 400, 50
-            pos: 200, 200
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_add_sport()
+                IconLeftWidget:
+                    icon: "food"
 
-        Button:
-            text: "Instructions"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_instru()
+            OneLineAvatarIconListItem:
+                text: 'Add sport'
+                on_press: root.pressed_add_sport()
 
-        Button:
-            text: "Main"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_main()
+                IconLeftWidget:
+                    icon: "run"
 
-        Button:
-            text: "Exit"
-            size: 400, 50
-            pos: 200, 50
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_exit()
+            OneLineAvatarIconListItem:
+                text: 'Instructions'
+                on_press: root.pressed_instru()
+
+                IconLeftWidget:
+                    icon: "menu"
+
+            OneLineAvatarIconListItem:
+                text: 'Main'
+                on_press: root.pressed_main()
+
+                IconLeftWidget:
+                    icon: "home"
+
+            OneLineAvatarIconListItem:
+                text: 'Exit'
+                on_press: root.pressed_exit()
+
+                IconLeftWidget:
+                    icon: "logout-variant"
 
 
 <WaterScreen>:
-    cols: 1
+    on_enter: root.update_water()
 
-    GridLayout:
-        size: root.width, root.height
-        rows: 7
+    FloatLayout:
+        MDLabel:
+            text: "[b]Water screen[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
+            halign: 'center'
+            valign: 'middle'
 
+        MDLabel:
+            text: "You can see your current and ideal water cups number and add cups of water"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
+            pos_hint: {"center_x": 0.5, "center_y": 0.63}
             cols: 2
-
-            Label:
+            MDLabel:
                 text: "Current cups:"
                 pos: 200, 450
                 text_size: root.width/2, None
@@ -248,7 +462,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: current_water
                 text: ""
                 pos: 300, 450
@@ -258,8 +472,9 @@
                 valign: 'middle'
 
         GridLayout:
+            pos_hint: {"center_x": 0.5, "center_y": 0.53}
             cols: 2
-            Label:
+            MDLabel:
                 text: "Ideal cups:"
                 pos: 200, 400
                 text_size: root.width/2, None
@@ -267,7 +482,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: ideal_water
                 text: ""
                 pos: 300, 400
@@ -276,55 +491,62 @@
                 halign: 'center'
                 valign: 'middle'
 
-        Button:
-            text: "Update Cups"
-            size: 400, 50
-            pos: 200, 350
-            background_color: 0, 0, 0.5, 2
-            on_press: root.update_water()
+        MDList:
+            pos_hint: {"center_x": 0.5, "center_y": 0.24}
 
-        Button:
-            text: "Add cups"
-            size: 400, 50
-            pos: 200, 275
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_add_cups()
+            OneLineAvatarIconListItem:
+                text: 'Add cups'
+                on_press: root.pressed_add_cups()
 
+                IconLeftWidget:
+                    icon: "cup-water"
 
-        Button:
-            text: "Instructions"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_instru()
+            OneLineAvatarIconListItem:
+                text: 'Instructions'
+                on_press: root.pressed_instru()
 
-        Button:
-            text: "Main"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_main()
+                IconLeftWidget:
+                    icon: "menu"
 
-        Button:
-            text: "Exit"
-            size: 400, 50
-            pos: 200, 50
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_exit()
+            OneLineAvatarIconListItem:
+                text: 'Main'
+                on_press: root.pressed_main()
+
+                IconLeftWidget:
+                    icon: "home"
+
+            OneLineAvatarIconListItem:
+                text: 'Exit'
+                on_press: root.pressed_exit()
+
+                IconLeftWidget:
+                    icon: "logout-variant"
 
 
 <SleepScreen>:
-    cols: 1
+    on_enter: root.update_sleep()
 
-    GridLayout:
-        size: root.width, root.height
-        rows: 7
+    FloatLayout:
+        MDLabel:
+            text: "[b]Sleep screen[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
+            halign: 'center'
+            valign: 'middle'
 
+        MDLabel:
+            text: "You can see your current and ideal sleep hours number and add hours of sleep"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
 
         GridLayout:
             cols: 2
-
-            Label:
+            pos_hint: {"center_x": 0.5, "center_y": 0.63}
+            MDLabel:
                 text: "Current hours:"
                 pos: 200, 450
                 text_size: root.width/2, None
@@ -332,7 +554,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: current_sleep
                 text: ""
                 pos: 300, 450
@@ -343,7 +565,8 @@
 
         GridLayout:
             cols: 2
-            Label:
+            pos_hint: {"center_x": 0.5, "center_y": 0.53}
+            MDLabel:
                 text: "Ideal hours:"
                 pos: 200, 400
                 text_size: root.width/2, None
@@ -351,7 +574,7 @@
                 halign: 'center'
                 valign: 'middle'
 
-            Label:
+            MDLabel:
                 id: ideal_sleep
                 text: ""
                 pos: 300, 400
@@ -360,41 +583,37 @@
                 halign: 'center'
                 valign: 'middle'
 
-        Button:
-            text: "Update hours"
-            size: 400, 50
-            pos: 200, 350
-            background_color: 0, 0, 0.5, 2
-            on_press: root.update_sleep()
+        MDList:
+            pos_hint: {"center_x": 0.5, "center_y": 0.24}
 
-        Button:
-            text: "Add hours"
-            size: 400, 50
-            pos: 200, 275
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_add_hours()
+            OneLineAvatarIconListItem:
+                text: 'Add hours'
+                on_press: root.pressed_add_hours()
+
+                IconLeftWidget:
+                    icon: "sleep"
+
+            OneLineAvatarIconListItem:
+                text: 'Instructions'
+                on_press: root.pressed_instru()
+
+                IconLeftWidget:
+                    icon: "menu"
+
+            OneLineAvatarIconListItem:
+                text: 'Main'
+                on_press: root.pressed_main()
+
+                IconLeftWidget:
+                    icon: "home"
 
 
-        Button:
-            text: "Instructions"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_instru()
+            OneLineAvatarIconListItem:
+                text: 'Exit'
+                on_press: root.pressed_exit()
 
-        Button:
-            text: "Main"
-            size: 400, 50
-            pos: 200, 125
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_main()
-
-        Button:
-            text: "Exit"
-            size: 400, 50
-            pos: 200, 50
-            background_color: 2, 0, 0, 1
-            on_press: root.pressed_exit()
+                IconLeftWidget:
+                    icon: "logout-variant"
 
 
 <UpdateInfoScreen>:
@@ -404,110 +623,131 @@
     user_weight: user_weight
     user_sex: user_sex
 
-    GridLayout:
-        size: root.width, root.height
-        rows: 6
 
-        GridLayout:
-            cols: 2
+    FloatLayout:
+        MDLabel:
+            text:"[b]Update info[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.80}
+            halign: 'center'
+            valign: 'middle'
 
-            Label:
-                text: "Age:"
-                pos: 200, 450
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDLabel:
+            text:"Enter your info"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.74}
+            halign: 'center'
+            valign: 'middle'
 
-            TextInput:
-                id: user_age
-                multiline: False
-                pos: 350, 475
-                size: 400, 50
+        MDTextField:
+            mode: "round"
+            id: user_age
+            icon_left: "human"
+            hint_text: "Enter your age"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.62}
 
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Height(cm):"
-                pos: 200, 350
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDTextField:
+            mode: "round"
+            id: user_height
+            icon_left: "altimeter"
+            hint_text: "Enter your height (cm)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.52}
 
-            TextInput:
-                id: user_height
-                multiline: False
-                pos: 350, 375
-                size: 400, 50
+        MDTextField:
+            mode: "round"
+            id: user_weight
+            icon_left: "weight-kilogram"
+            hint_text: "Enter your weight (kg)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.42}
 
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Weight(kg):"
-                pos: 200, 250
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDTextField:
+            mode: "round"
+            id: user_sex
+            icon_left: "gender-male-female"
+            hint_text: "Enter your sex (f/m)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.32}
 
-            TextInput:
-                id: user_weight
-                multiline: False
-                pos: 350, 275
-                size: 400, 50
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.20}
+            on_press: root.pressed()
 
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Sex(f/m):"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
-
-            TextInput:
-                id: user_sex
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
-
-        Label:
+        MDLabel:
             id: error_msg
             text: ""
             text_size: root.width, None
             size: self.texture_size
+            pos_hint: {"center_x": 0.5, "center_y": 0.12}
             halign: 'center'
             valign: 'middle'
 
-        GridLayout:
-            size: 200, 200
-            rows: 1
-
-            Button:
-                text: "Submit"
-                size: 100, 50
-                pos: 350, 75
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed()
-
 
 <AddFoodScreen>
-
-    rows: 1
     user_amount: user_amount
 
-    BoxLayout:
-        orientation: 'vertical'
+    FloatLayout:
+        MDLabel:
+            text:"[b]Add food[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
+            text:"Enter the food you ate and the amount in grams"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.70}
+            halign: 'center'
+            valign: 'middle'
 
         Spinner:
             id: spinner
             text: "Choose type of food"
+            size_hint: (0.83, 0.06)
+            pos_hint: {"center_x": 0.5, "center_y": 0.57}
             values: root.arr_food
             on_text: root.pressed_spinner(spinner.text)
 
-        Label:
+        MDTextField:
+            mode: "round"
+            id: user_amount
+            icon_left: "food"
+            hint_text: "Enter amount (grams)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.47}
+
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.35}
+            on_press: root.pressed_submit()
+
+        MDLabel:
+            pos_hint: {"center_x": 0.5, "center_y": 0.27}
             id: error_msg
             text: ""
             text_size: root.width, None
@@ -515,107 +755,100 @@
             halign: 'center'
             valign: 'middle'
 
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Enter amount (grams):"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
-
-            TextInput:
-                id: user_amount
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
-
-        GridLayout:
-            size: 200, 200
-            rows: 1
-
-            Button:
-                text: "Submit"
-                size: 100, 50
-                pos: 350, 75
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_submit()
-
 
 <AddSportScreen>
-
-    rows: 1
     user_amount: user_amount
 
-    BoxLayout:
-        orientation: 'vertical'
+    FloatLayout:
+        MDLabel:
+            text:"[b]Add sport[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.77}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
+            text:"Enter the sport you did and the amount of time"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.70}
+            halign: 'center'
+            valign: 'middle'
 
         Spinner:
             id: spinner
             text: "Choose type of sport"
+            size_hint: (0.83, 0.06)
+            pos_hint: {"center_x": 0.5, "center_y": 0.57}
             values: root.arr_sport
             on_text: root.pressed_spinner(spinner.text)
 
-        Label:
+        MDTextField:
+            mode: "round"
+            id: user_amount
+            icon_left: "run"
+            hint_text: "Enter amount (min)"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.47}
+
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.35}
+            on_press: root.pressed_submit()
+
+        MDLabel:
+            pos_hint: {"center_x": 0.5, "center_y": 0.27}
             id: error_msg
             text: ""
             text_size: root.width, None
             size: self.texture_size
             halign: 'center'
             valign: 'middle'
-
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Enter time (min):"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
-
-            TextInput:
-                id: user_amount
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
-
-        GridLayout:
-            size: 200, 200
-            rows: 1
-
-            Button:
-                text: "Submit"
-                size: 100, 50
-                pos: 350, 75
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_submit()
-
 
 <AddCupsScreen>
-    rows: 1
     user_amount: user_amount
 
-    GridLayout:
-        rows: 3
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Enter cups' amount:"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+    FloatLayout:
+        MDLabel:
+            text:"[b]Add cups[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.75}
+            halign: 'center'
+            valign: 'middle'
 
-            TextInput:
-                id: user_amount
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
+        MDLabel:
+            text:"Enter the amount of water cups you drank"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.68}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
+        MDTextField:
+            mode: "round"
+            id: user_amount
+            icon_left: "cup-water"
+            hint_text: "Enter cups' amount"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
+
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.42}
+            on_press: root.pressed_submit()
+
+        MDLabel:
+            pos_hint: {"center_x": 0.5, "center_y": 0.33}
             id: error_msg
             text: ""
             text_size: root.width, None
@@ -623,391 +856,493 @@
             halign: 'center'
             valign: 'middle'
 
-        GridLayout:
-            size: 200, 200
-            rows: 1
-
-            Button:
-                text: "Submit"
-                size: 100, 50
-                pos: 350, 75
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_submit()
-
-
 <AddHoursScreen>
-    rows: 1
     user_start: user_start
     user_finish: user_finish
 
-    GridLayout:
-        rows: 4
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Enter when you went to sleep (hh:mm, 24 hour format):"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
 
-            TextInput:
-                id: user_start
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
+    FloatLayout:
+        MDLabel:
+            text:"[b]Add hours[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.75}
+            halign: 'center'
+            valign: 'middle'
 
-        GridLayout:
-            cols: 2
-            Label:
-                text: "Enter when you woke up (hh:mm, 24 hour format):"
-                pos: 200, 150
-                text_size: root.width/2, None
-                size: self.texture_size
-                halign: 'center'
-                valign: 'middle'
+        MDLabel:
+            text:"Enter when you went to sleep and when you woke up (hh:mm, 24 hour format)"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.68}
+            halign: 'center'
+            valign: 'middle'
 
-            TextInput:
-                id: user_finish
-                multiline: False
-                pos: 350, 175
-                size: 400, 50
+        MDTextField:
+            mode: "round"
+            id: user_start
+            icon_left: "sleep"
+            hint_text: "Enter when you fell asleep"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-        Label:
+        MDTextField:
+            mode: "round"
+            id: user_finish
+            icon_left: "weather-sunny"
+            hint_text: "Enter time of waking up"
+            multiline: False
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
+            pos_hint: {"center_x": 0.5, "center_y": 0.45}
+
+        MDFillRoundFlatButton:
+            text: "Submit"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.32}
+            on_press: root.pressed_submit()
+
+        MDLabel:
+            pos_hint: {"center_x": 0.5, "center_y": 0.23}
             id: error_msg
             text: ""
             text_size: root.width, None
             size: self.texture_size
             halign: 'center'
             valign: 'middle'
-
-        GridLayout:
-            size: 200, 200
-            rows: 1
-
-            Button:
-                text: "Submit"
-                size: 100, 50
-                pos: 350, 75
-                background_color: 2, 0, 0, 1
-                on_press: root.pressed_submit()
 
 
 <StartInstructions>
 
-    GridLayout:
-        rows: 6
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
+        MDLabel:
             text: "[b][u]Log In:[/u][/b]\nIf you want to log in to the app, press the log in button and enter your username."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.8}
 
-        Label:
+        MDLabel:
             text: "[b][u]Sign up:[/u][/b]\nIf you want to sign up to the app, press the sign up button, enter your username and than you'll need to enter information about yourself such as height, weight, age and sex."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.61}
 
-        Label:
+        MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.43}
 
-        Label:
+        MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.30}
 
-        Label:
+        MDLabel:
             text: "To return to the previous screen press the button below."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+            pos_hint: {"center_x": 0.5, "center_y": 0.19}
 
-        Button:
+        MDFillRoundFlatButton:
             text: "Back"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.1}
             on_press: root.pressed()
 
 
 <MainInstructions>
 
-    GridLayout:
-        rows: 8
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.94}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
+        MDLabel:
             text: "[b][u]Calories:[/u][/b]\nTo keep track on your calories, press the Calories button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
 
-        Label:
+        MDLabel:
             text: "[b][u]Water:[/u][/b]\nTo keep track on the water you drink, press the Water button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.745}
 
-        Label:
+        MDLabel:
             text: "[b][u]Sleep:[/u][/b]\nTo keep track on the hours you sleep, press the Sleep button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.64}
 
-        Label:
+        MDLabel:
             text: "[b][u]Update Info:[/u][/b]\nTo update your info, press the Update Info button. Enter your new info. Press Submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.535}
 
-        Label:
+        MDLabel:
+            text: "[b][u]Weekly report:[/u][/b]\nTo see your weekly report, press the Weekly report button."
+            text_size: root.width, None
+            size: self.texture_size
+            halign: 'left'
+            valign: 'middle'
+            markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.43}
+
+        MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.325}
 
-        Label:
+        MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.22}
 
-        Label:
+        MDLabel:
             text: "To return to the previous screen press the button below."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+            pos_hint: {"center_x": 0.5, "center_y": 0.125}
 
-        Button:
+        MDFillRoundFlatButton:
             text: "Back"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.05}
             on_press: root.pressed()
 
 
 <CalInstructionsOne>
 
-    GridLayout:
-        rows: 6
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
+        MDLabel:
+            text:"page 1"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
             text: "[b][u]Update Calories:[/u][/b]\nTo see your current and ideal calories, press the update calories button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.74}
 
-        Label:
+        MDLabel:
             text: "[b][u]Add food:[/u][/b]\nTo add food you ate, press the add food button. Choose the food and the amount (grams) you have eaten. Press submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.57}
 
-        Label:
+        MDLabel:
             text: "[b][u]Add sport:[/u][/b]\nTo add sport you did, press the add sport button. Choose the sport and the amount (min) you have done. Press submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.36}
 
-
-        Label:
+        MDLabel:
             text: "To move to the next screen press Next, and to return to the cal screen press Cal."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+            pos_hint: {"center_x": 0.5, "center_y": 0.2}
 
         BoxLayout:
-            Button:
+            pos_hint: {"center_x": 0.5, "center_y": 0.05}
+            MDFillRoundFlatButton:
                 text: "Cal"
+                size_hint: (0.45, 0.075)
+                pos_hint: {"center_x": 0.25, "center_y": 0.55}
                 on_press: root.pressed_back()
 
-            Button:
+            MDFillRoundFlatButton:
                 text: "Next"
+                size_hint: (0.45, 0.075)
+                pos_hint: {"center_x": 0.75, "center_y": 0.55}
                 on_press: root.pressed_next()
 
 
 <CalInstructionsTwo>
 
-    GridLayout:
-        rows: 5
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            halign: 'center'
+            valign: 'middle'
 
-        Label:
+        MDLabel:
+            text:"page 2"
+            font_style: "Subtitle1"
+            theme_text_color: "Secondary"
+            pos_hint: {"center_x": 0.5, "center_y": 0.85}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.74}
 
-        Label:
+        MDLabel:
             text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.56}
 
-        Label:
+        MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.38}
 
-        Label:
+        MDLabel:
             text: "To move to the previous instructions screen press Previous, and to return to the cal screen press Cal."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+            pos_hint: {"center_x": 0.5, "center_y": 0.2}
 
         BoxLayout:
-            Button:
-                text: "previous"
+            pos_hint: {"center_x": 0.5, "center_y": 0.05}
+            MDFillRoundFlatButton:
+                text: "Previous"
+                size_hint: (0.45, 0.075)
+                pos_hint: {"center_x": 0.25, "center_y": 0.55}
                 on_press: root.pressed_previous()
 
-            Button:
+            MDFillRoundFlatButton:
                 text: "Cal"
+                size_hint: (0.45, 0.075)
+                pos_hint: {"center_x": 0.75, "center_y": 0.55}
                 on_press: root.pressed_back()
 
 
 <WaterInstructions>
-    GridLayout:
-        rows: 7
 
-        Label:
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
             text: "[b][u]Update Cups:[/u][/b]\nTo see your current and ideal cups, press the update cups button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.82}
 
-        Label:
+        MDLabel:
             text: "[b][u]Add cups:[/u][/b]\nTo add cups of water you drank, press the add cups button. Enter the cups' amount you drank. Press submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.69}
 
-        Label:
+        MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.56}
 
-        Label:
+        MDLabel:
             text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.44}
 
-        Label:
+        MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.32}
 
-        Label:
+        MDLabel:
             text: "To return to the water screen press Water."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
+            pos_hint: {"center_x": 0.5, "center_y": 0.20}
 
-        Button:
+        MDFillRoundFlatButton:
             text: "Water"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.1}
             on_press: root.pressed_back()
 
 
 <SleepInstructions>
-    GridLayout:
-        rows: 7
 
-        Label:
+    FloatLayout:
+        MDLabel:
+            text:"[b]Instructions[/b]"
+            markup: True
+            font_style: "H4"
+            pos_hint: {"center_x": 0.5, "center_y": 0.92}
+            halign: 'center'
+            valign: 'middle'
+
+        MDLabel:
             text: "[b][u]Update Hours:[/u][/b]\nTo see your current and ideal hours, press the update hours button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.82}
 
-        Label:
+        MDLabel:
             text: "[b][u]Add hours:[/u][/b]\nTo add sleep hours you slept, press the add hours button. Enter when you went to sleep and when you woke up. Press submit in the end."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.69}
 
-        Label:
+        MDLabel:
             text: "[b][u]Instructions:[/u][/b]\nIf you want to see the instructions again, just press the instruction button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.56}
 
-        Label:
+        MDLabel:
             text: "[b][u]Main:[/u][/b]\nTo return to main screen, press the main button."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.44}
 
-        Label:
+        MDLabel:
             text: "[b][u]Exit:[/u][/b]\nIf you wish to leave the app, you can press the exit button any time."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
             markup: True
+            pos_hint: {"center_x": 0.5, "center_y": 0.32}
 
-        Label:
+        MDLabel:
             text: "To return to the sleep screen press Sleep."
             text_size: root.width, None
             size: self.texture_size
             halign: 'left'
             valign: 'middle'
 
-        Button:
+            pos_hint: {"center_x": 0.5, "center_y": 0.20}
+
+        MDFillRoundFlatButton:
             text: "Sleep"
+            size_hint: (0.45, 0.075)
+            pos_hint: {"center_x": 0.5, "center_y": 0.1}
             on_press: root.pressed_back()
