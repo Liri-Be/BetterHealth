@@ -6,9 +6,10 @@ from kivy.properties import ObjectProperty, ListProperty, StringProperty
 from kivymd.uix.button import MDFillRoundFlatIconButton
 from kivymd.uix.datatables import MDDataTable
 import socket
+from hashlib import sha256
 
 # global vars
-CLIENT_SOC = ""  # the current client socket
+CLIENT_SOC = socket.socket()  # the current client socket
 # data of the user
 USERNAME = ""
 CURRENT_CAL = ""
@@ -39,7 +40,7 @@ class StartScreen(Screen):
 
     def pressed_log_in(self):
         """
-        when pressing the login button it moves to login screen
+        when pressing the login button it moves to log in screen
         :return: None
         """
         self.manager.current = 'log in'
@@ -53,7 +54,7 @@ class StartScreen(Screen):
 
     def pressed_instru(self):
         """
-        when pressing the instructions button it show the instructions of logging and signing to the app
+        when pressing the instructions button it shows the instructions of logging and signing to the app
         :return: None
         """
         self.manager.current = 'start instru'
@@ -85,8 +86,8 @@ class LogInScreen(Screen):
 
     def pressed(self):
         """
-        when pressing the login button it modify the server we are logging in
-        and sends data (username) to the server - logs in if succeed, else shows appropriate msg
+        when pressing the login button it modifies the server we are logging in
+        and sends data (username) to the server - logs in if succeeded, else shows appropriate msg
         :return: None
         """
         global USERNAME
@@ -98,7 +99,10 @@ class LogInScreen(Screen):
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
 
-        send_to_server(CLIENT_SOC, ("log" + " " + username + " " + password))  # modify the server we are logging in
+        # hash the password :P crypto wow!
+        hashed_pwd = sha256(password.encode()).hexdigest()
+
+        send_to_server(CLIENT_SOC, ("log" + " " + username + " " + hashed_pwd))  # modify the server we are logging in
         data_from_server = recv_from_server(CLIENT_SOC)  # get answer whether we logged in or not
 
         if "Successfully" in data_from_server:
@@ -128,8 +132,8 @@ class SignUpScreen(Screen):
 
     def pressed(self):
         """
-        when pressing the signup button it modify the server we are signing up
-        and sends data (username) to the server - moves to get user's date if succeed, else shows appropriate msg
+        when pressing the signup button it modifies the server we are signing up
+        and sends data (username) to the server - moves to get user's date if succeeded, else shows appropriate msg
         :return: None
         """
         global USERNAME
@@ -141,7 +145,10 @@ class SignUpScreen(Screen):
             self.error_lbl.text = recv_from_server(CLIENT_SOC)
             return
 
-        send_to_server(CLIENT_SOC, ("sign" + " " + username + " " + password))  # modify the server we are signing up
+        # hash the password :P crypto wow!
+        hashed_pwd = sha256(password.encode()).hexdigest()
+
+        send_to_server(CLIENT_SOC, ("sign" + " " + username + " " + hashed_pwd))  # modify the server we are signing up
         data_from_server = recv_from_server(CLIENT_SOC)
 
         if "Good" in data_from_server:
@@ -283,7 +290,7 @@ class UpdateInfoScreen(Screen):
     def pressed(self):
         """
         when pressing the submit button it sends data to the server,
-        it moves to main cal screen if succeed, else shows appropriate msg
+        it moves to main cal screen if succeeded, else shows appropriate msg
         :return: None
         """
         user_age = self.user_age.text
@@ -342,6 +349,15 @@ class WeeklyReportScreen(Screen):
     week_water = ListProperty(None)
     week_sleep = ListProperty(None)
 
+    def __init__(self, **kw):
+        super(WeeklyReportScreen, self).__init__(**kw)
+        self.table = None
+        self.button = None
+
+    def on_leave(self, *args):
+        self.remove_widget(self.table)
+        self.remove_widget(self.button)
+
     def update_statistics(self):
         """
         update all the info from the current week - daily cal, water and sleep amounts, avg amounts and ideal amounts
@@ -357,38 +373,38 @@ class WeeklyReportScreen(Screen):
         self.week_sleep = sleep.split(" ")
 
         # make the table for the report
-        table = MDDataTable(pos_hint={"center_x": 0.5, "center_y": 0.47},
-                            size_hint=(0.92, 0.74),
-                            rows_num=9,
-                            column_data=[
-                                ("Day", dp(9)),
-                                ("Calories", dp(13.25)),
-                                ("Water cups", dp(18)),
-                                ("Sleep hours", dp(18))
-                            ],
-                            row_data=[
-                                ("Sun.", self.week_cal[0], self.week_water[0], self.week_sleep[0]),
-                                ("Mon.", self.week_cal[1], self.week_water[1], self.week_sleep[1]),
-                                ("Tue.", self.week_cal[2], self.week_water[2], self.week_sleep[2]),
-                                ("Wed.", self.week_cal[3], self.week_water[3], self.week_sleep[3]),
-                                ("Thu.", self.week_cal[4], self.week_water[4], self.week_sleep[4]),
-                                ("Fri.", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
-                                ("Sat.", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
-                                ("Avg", self.avg_cal, self.avg_water, self.avg_sleep),
-                                ("Ideal", IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP)
-                            ])
+        self.table = MDDataTable(pos_hint={"center_x": 0.5, "center_y": 0.47},
+                                 size_hint=(0.92, 0.74),
+                                 rows_num=9,
+                                 column_data=[
+                                     ("Day", dp(9)),
+                                     ("Calories", dp(13.25)),
+                                     ("Water cups", dp(18)),
+                                     ("Sleep hours", dp(18))
+                                 ],
+                                 row_data=[
+                                     ("Sun.", self.week_cal[0], self.week_water[0], self.week_sleep[0]),
+                                     ("Mon.", self.week_cal[1], self.week_water[1], self.week_sleep[1]),
+                                     ("Tue.", self.week_cal[2], self.week_water[2], self.week_sleep[2]),
+                                     ("Wed.", self.week_cal[3], self.week_water[3], self.week_sleep[3]),
+                                     ("Thu.", self.week_cal[4], self.week_water[4], self.week_sleep[4]),
+                                     ("Fri.", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
+                                     ("Sat.", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
+                                     ("Avg", self.avg_cal, self.avg_water, self.avg_sleep),
+                                     ("Ideal", IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP)
+                                 ])
 
         # button to get back to main
-        button = MDFillRoundFlatIconButton(text="Main",
-                                           pos_hint={"center_x": 0.5, "center_y": 0.05},
-                                           size_hint=(0.45, 0.075),
-                                           icon="home",
-                                           on_press=self.pressed_main
-                                           )
+        self.button = MDFillRoundFlatIconButton(text="Main",
+                                                pos_hint={"center_x": 0.5, "center_y": 0.05},
+                                                size_hint=(0.45, 0.075),
+                                                icon="home",
+                                                on_press=self.pressed_main
+                                                )
 
         # add table and button to the screen
-        self.add_widget(table)
-        self.add_widget(button)
+        self.add_widget(self.table)
+        self.add_widget(self.button)
         return
 
     def pressed_main(self, arg):
@@ -487,7 +503,7 @@ class AddFoodScreen(Screen):
         when pressing the spinner it saves the choice the user made
         :return: None
         """
-        if " " in choice:  # fix spaces, server split data by spaces and we don't want to lose information
+        if " " in choice:  # fix spaces, server split data by spaces, and we don't want to lose information
             self.choice = choice.split(" ")[0] + "_" + choice.split(" ")[1]
         else:
             self.choice = choice
@@ -495,13 +511,13 @@ class AddFoodScreen(Screen):
     def pressed_submit(self):
         """
         when pressing the submit button it sends data to the server,
-        and moves to main cal screen if succeed, else shows appropriate msg
+        and moves to main cal screen if succeeded, else shows appropriate msg
         :return: None
         """
         global CLIENT_SOC, USERNAME
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("food" + " " + USERNAME))  # let the server know we entering food
+        send_to_server(CLIENT_SOC, ("food" + " " + USERNAME))  # let the server know we're entering food
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
@@ -549,13 +565,13 @@ class AddSportScreen(Screen):
     def pressed_submit(self):
         """
         when pressing the submit button it sends data to the server,
-        and moves to main cal screen if succeed, else shows appropriate msg
+        and moves to main cal screen if succeeded, else shows appropriate msg
         :return: None
         """
         global CLIENT_SOC
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we entering sport
+        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we're entering sport
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
@@ -679,13 +695,13 @@ class AddCupsScreen(Screen):
     def pressed_submit(self):
         """
         when pressing the submit button it sends data to the server,
-        and moves to main water screen if succeed, else shows appropriate msg
+        and moves to main water screen if succeeded, else shows appropriate msg
         :return: None
         """
         global CLIENT_SOC
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("cups" + " " + USERNAME))  # let the server know we entering cups
+        send_to_server(CLIENT_SOC, ("cups" + " " + USERNAME))  # let the server know we're entering cups
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
             send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
@@ -785,14 +801,14 @@ class AddHoursScreen(Screen):
     def pressed_submit(self):
         """
         when pressing the submit button it sends data to the server,
-        and moves to main sleep screen if succeed, else shows appropriate msg
+        and moves to main sleep screen if succeeded, else shows appropriate msg
         :return: None
         """
         global CLIENT_SOC
         user_start = self.user_start.text
         user_finish = self.user_finish.text
 
-        send_to_server(CLIENT_SOC, ("hours" + " " + USERNAME))  # let the server know we entering hours
+        send_to_server(CLIENT_SOC, ("hours" + " " + USERNAME))  # let the server know we're entering hours
 
         # error state
         if user_start == "" or user_finish == "":
@@ -984,7 +1000,7 @@ def main():
 
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('10.0.0.130', 10000))  # connect to server in port 10000
+    client_socket.connect(('server ip', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
 
     # start the application

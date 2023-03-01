@@ -356,7 +356,7 @@ def sign_up(p_client_soc, p_name, p_pass, db):
         return
 
     doc_ref = db.collection(u'Users').document(p_name)
-    doc_ref.set({'password': p_pass})  # save the password
+    doc_ref.set({'password': p_pass, 'socket': str(p_client_soc)})  # save the password and the socket in the database
     p_client_soc.send(b"Good username")
     return
 
@@ -621,7 +621,7 @@ def main():
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
-    cred = credentials.Certificate("fill here your json file")
+    cred = credentials.Certificate("enter json name")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 

@@ -67,20 +67,26 @@
             halign: 'center'
             valign: 'middle'
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: username
             icon_left: "account"
             hint_text: "Enter username (no spaces!)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: password
             icon_left: "eye-off"
             hint_text: "Enter password (no spaces!)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.45}
             password: True
 
@@ -120,20 +126,26 @@
             halign: 'center'
             valign: 'middle'
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: username
             icon_left: "account"
             hint_text: "Enter username (no spaces!)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: password
             icon_left: "eye-off"
             hint_text: "Enter password (no spaces!)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.45}
             password: True
 
@@ -202,7 +214,7 @@
                 on_press: root.pressed_profile()
 
                 IconLeftWidget:
-                    icon: "face-profile"
+                    icon: "face-man-profile"
 
             OneLineAvatarIconListItem:
                 text: 'Update info'
@@ -628,36 +640,48 @@
             halign: 'center'
             valign: 'middle'
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_age
             icon_left: "human"
             hint_text: "Enter your age"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.62}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_height
             icon_left: "altimeter"
             hint_text: "Enter your height (cm)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.52}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_weight
             icon_left: "weight-kilogram"
             hint_text: "Enter your weight (kg)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.42}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_sex
             icon_left: "gender-male-female"
             hint_text: "Enter your sex (f/m)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.32}
 
         MDFillRoundFlatButton:
@@ -704,12 +728,15 @@
             values: root.arr_food
             on_text: root.pressed_spinner(spinner.text)
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_amount
             icon_left: "food"
             hint_text: "Enter amount (grams)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.47}
 
         MDFillRoundFlatButton:
@@ -756,12 +783,15 @@
             values: root.arr_sport
             on_text: root.pressed_spinner(spinner.text)
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_amount
             icon_left: "run"
             hint_text: "Enter amount (min)"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.47}
 
         MDFillRoundFlatButton:
@@ -800,12 +830,15 @@
             halign: 'center'
             valign: 'middle'
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_amount
             icon_left: "cup-water"
             hint_text: "Enter cups' amount"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
         MDFillRoundFlatButton:
@@ -846,20 +879,26 @@
             halign: 'center'
             valign: 'middle'
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_start
             icon_left: "sleep"
             hint_text: "Enter when you fell asleep"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.55}
 
-        MDTextFieldRound:
+        MDTextField:
+            mode: "round"
             id: user_finish
             icon_left: "weather-sunny"
             hint_text: "Enter time of waking up"
             multiline: False
-            size_hint: (0.75, 0.05)
+            # size_hint: (0.75, 0.05)
+            size_hint_x: 0.75
+            font_size: 15
             pos_hint: {"center_x": 0.5, "center_y": 0.45}
 
         MDFillRoundFlatButton:
