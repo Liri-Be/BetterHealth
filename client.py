@@ -204,9 +204,6 @@ class MDTextFieldPassword(MDTextField):
 
         return super(MDTextFieldPassword, self).on_touch_down(touch)
 
-    def set_cursor(self, pos, dt):
-        self.cursor = pos
-
 
 # main screen classes
 class MainScreen(Screen):
