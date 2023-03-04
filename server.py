@@ -313,16 +313,18 @@ def reset(db):
         hour = int(current_time.split(":")[0])
         minute = int(current_time.split(":")[1])
         today_date = datetime.date.today().strftime("%d %m %Y")
-        day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() - 1
+        # weekday assign mon. = 0 -> sun. = 6, I switch to sun. = 0 -> saturday = 6
+        day_ref = (datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1) % 7
 
         # if the day had passed, reset the current calories of the users and update week arrays
-        if hour == 0 and minute == 0:
+        # if hour == 0 and minute == 0:
+        if hour > 0 and minute > 0:
             coll_ref = db.collection(u'UsersInfo').get()  # reference to the collection of users
             for doc in coll_ref:
                 doc_dict = doc.to_dict()
 
                 # handle different days
-                if day_ref == -1:
+                if day_ref == 1:  # sunday ~00:00 -> reset date new week!
                     doc_dict['week_cal'] = ["0", "0", "0", "0", "0", "0", "0"]
                     doc_dict['week_water'] = ["0", "0", "0", "0", "0", "0", "0"]
                     doc_dict['week_sleep'] = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
@@ -331,7 +333,7 @@ def reset(db):
                     doc_dict['week_water'][day_ref] = doc_dict['current water']
                     doc_dict['week_sleep'][day_ref] = doc_dict['current sleep']
 
-                # reset
+                # reset data new day :!
                 doc_dict['current cal'] = "0"
                 doc_dict['current water'] = "0"
                 doc_dict['current sleep'] = "00:00"
@@ -518,12 +520,13 @@ def weekly_report(p_client_soc, p_name, db):
 
     # get curr day num
     today_date = datetime.date.today().strftime("%d %m %Y")
-    day_ref = datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 2
+    # weekday assign mon. = 0 -> sun. = 6, I switch to sun. = 1 -> saturday = 7
+    day_ref = (datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1) % 7 + 1
 
-    # update arrays in current data
-    cal_arr[day_ref] = dict_data['current cal']
-    water_arr[day_ref] = dict_data['current water']
-    sleep_arr[day_ref] = dict_data['current sleep']
+    # update arrays in current data (-1, so we won't overflow the array)
+    cal_arr[day_ref - 1] = dict_data['current cal']
+    water_arr[day_ref - 1] = dict_data['current water']
+    sleep_arr[day_ref - 1] = dict_data['current sleep']
 
     # calc avg cal
     sum_amount = 0
@@ -678,7 +681,7 @@ def main():
     server_socket.bind(('', 10000))
     server_socket.listen(10)
 
-    cred = credentials.Certificate(r".\mytest-edf1e-firebase-adminsdk-y9wff-a7284e6f22.json")
+    cred = credentials.Certificate("json file goes here")
     firebase_admin.initialize_app(cred)
     db = firestore.client()  # reference to database
 
