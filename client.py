@@ -8,21 +8,25 @@ from kivymd.uix.datatables import MDDataTable
 import socket
 from hashlib import sha256
 from kivymd.uix.textfield import MDTextField
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.serialization import PublicFormat, Encoding, load_der_public_key
 
-# global vars
-CLIENT_SOC = socket.socket()  # the current client socket
-# data of the user
-USERNAME = ""
-CURRENT_CAL = ""
-IDEAL_CAL = ""
-CURRENT_WATER = ""
-IDEAL_WATER = ""
-CURRENT_SLEEP = ""
-IDEAL_SLEEP = ""
-HEIGHT = ""
-WEIGHT = ""
-AGE = ""
-SEX = ""
+# # global vars
+# CLIENT_SOC = socket.socket()  # the current client socket
+# KEY = ""
+# # data of the user
+# USERNAME = ""
+# CURRENT_CAL = ""
+# IDEAL_CAL = ""
+# CURRENT_WATER = ""
+# IDEAL_WATER = ""
+# CURRENT_SLEEP = ""
+# IDEAL_SLEEP = ""
+# HEIGHT = ""
+# WEIGHT = ""
+# AGE = ""
+# SEX = ""
 
 # the possible choices for user
 FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
@@ -36,9 +40,119 @@ SPORT_VALUES = ["Basketball", "Bowling", "Cycling", "Dancing", "Gardening", "Gol
                 "Skiing", "Swimming", "Tennis", "Walking", "Weight Training"]
 
 
+class User:
+    def __init__(self, c_soc, k):
+        """
+        constructor
+        :param c_soc: client_socket
+        :type c_soc: socket.socket
+        :param k: key
+        """
+        # communication with the server
+        self.client_socket = c_soc  # the current client socket
+        self.key = k  # the shared key for communication with the server
+        # data of the user
+        self.username = ""
+        self.current_cal = ""
+        self.ideal_cal = ""
+        self.current_water = ""
+        self.ideal_water = ""
+        self.current_sleep = ""
+        self.ideal_sleep = ""
+        self.height = ""
+        self.weight = ""
+        self.age = ""
+        self.sex = ""
+
+    # functions to handle connections to server that aren't related to a specific screen
+    def send_to_server(self, data):
+        """
+        send data to the server
+        :param data: the data to send in string
+        :return: None
+        """
+        self.client_socket.send(data.encode())
+
+    def recv_from_server(self):
+        """
+        receive data from the server
+        :return: the data - string
+        """
+        data = self.client_socket.recv(1024).decode()
+        return data
+
+    def update_calories(self):
+        """
+        update the current and ideal calories with data from the server
+        :return: None
+        """
+        self.client_socket.send(b"cal" + b" " + self.username.encode())
+        data = self.client_socket.recv(1024).decode().split(" ")
+        self.current_cal = data[0]
+        self.ideal_cal = data[1]
+
+    def update_water(self):
+        """
+        update the current and ideal water with data from the server
+        :return: None
+        """
+        self.client_socket.send(b"water" + b" " + self.username.encode())
+        data = self.client_socket.recv(1024).decode().split(" ")
+        self.current_water = data[0]
+        self.ideal_water = data[1]
+
+    def update_sleep(self):
+        """
+        update the current and ideal sleep with data from the server
+        :return: None
+        """
+        self.client_socket.send(b"sleep" + b" " + self.username.encode())
+        data = self.client_socket.recv(1024).decode().split(" ")
+        self.current_sleep = data[0]
+        self.ideal_sleep = data[1]
+
+    def update_profile(self):
+        """
+        update the info with data from the server
+        :return: None
+        """
+        self.client_socket.send(b"profile" + b" " + self.username.encode())
+        data = self.client_socket.recv(1024).decode().split(" ")
+        self.age = data[0]
+        self.height = data[1]
+        self.weight = data[2]
+        if data[3] == "f":
+            self.sex = "female"
+        else:
+            self.sex = "male"
+
+    def get_statistics(self):
+        """
+        get from the user avg and daily amounts of cal, water cups and sleep hours
+        :return: dict of avg and daily amounts of cal, water cups and sleep hours
+        """
+        self.client_socket.send(b"report" + b" " + self.username.encode())
+        whole_data = []
+        for _ in range(4):
+            whole_data.append(self.client_socket.recv(1024).decode())
+            self.client_socket.send("good".encode())
+        avg = whole_data[0]
+        cal = whole_data[1]
+        water = whole_data[2]
+        sleep = whole_data[3]
+        return avg, cal, water, sleep
+
+
 # start screen classes
 class StartScreen(Screen):
-    global CLIENT_SOC
+    def __init__(self, user, **kw):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
+        super().__init__(**kw)
 
     def pressed_log_in(self):
         """
@@ -61,26 +175,31 @@ class StartScreen(Screen):
         """
         self.manager.current = 'start instru'
 
-    @staticmethod
-    def pressed_exit():
+    # @staticmethod
+    def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
         and close the screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("off" + " " + "."))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server("off" + " " + ".")
+        data = self.user.recv_from_server()
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
 
 
 class LogInScreen(Screen):
-    global CLIENT_SOC
     username = ObjectProperty(None)
     password = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(LogInScreen, self).__init__(**kwargs)
         self.username = self.ids['username']
         self.password = self.ids['password']
@@ -92,28 +211,29 @@ class LogInScreen(Screen):
         and sends data (username) to the server - logs in if succeeded, else shows appropriate msg
         :return: None
         """
-        global USERNAME
         username = self.username.text
         password = self.password.text
 
         if " " in username or username == "" or " " in password or password == "":  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + username + " " + password))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + username + " " + password)
+            self.error_lbl.text = self.user.recv_from_server()
             return
 
         # hash the password :P crypto wow!
         hashed_pwd = sha256(password.encode()).hexdigest()
 
-        send_to_server(CLIENT_SOC, ("log" + " " + username + " " + hashed_pwd))  # modify the server we are logging in
-        data_from_server = recv_from_server(CLIENT_SOC)  # get answer whether we logged in or not
+        # modify the server we are logging in
+        self.user.send_to_server("log" + " " + username + " " + hashed_pwd)
+        data_from_server = self.user.recv_from_server()  # get answer whether we logged in or not
 
         if "Successfully" in data_from_server:
             print(":)")
-            USERNAME = username
+            # USERNAME = username
+            self.user.username = username
             # update the server that we need the calories, water cups and sleep hours of user
-            update_calories(CLIENT_SOC)
-            update_water(CLIENT_SOC)
-            update_sleep(CLIENT_SOC)
+            self.user.update_calories()
+            self.user.update_water()
+            self.user.update_sleep()
             self.manager.current = 'main'
 
         else:
@@ -122,11 +242,16 @@ class LogInScreen(Screen):
 
 
 class SignUpScreen(Screen):
-    global CLIENT_SOC
     username = ObjectProperty(None)
     password = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(SignUpScreen, self).__init__(**kwargs)
         self.username = self.ids['username']
         self.password = self.ids['password']
@@ -138,24 +263,24 @@ class SignUpScreen(Screen):
         and sends data (username) to the server - moves to get user's date if succeeded, else shows appropriate msg
         :return: None
         """
-        global USERNAME
         username = self.username.text
         password = self.password.text
 
         if " " in username or username == "" or " " in password or password == "":  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + username + " " + password))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + username + " " + password)
+            self.error_lbl.text = self.user.recv_from_server()
             return
 
         # hash the password :P crypto wow!
         hashed_pwd = sha256(password.encode()).hexdigest()
 
-        send_to_server(CLIENT_SOC, ("sign" + " " + username + " " + hashed_pwd))  # modify the server we are signing up
-        data_from_server = recv_from_server(CLIENT_SOC)
+        # modify the server we are signing up
+        self.user.send_to_server("sign" + " " + username + " " + hashed_pwd)
+        data_from_server = self.user.recv_from_server()
 
         if "Good" in data_from_server:
             print(":)")
-            USERNAME = username
+            self.user.username = username
             self.manager.current = 'update info'  # move to the screen where we get user's data
 
         else:
@@ -208,12 +333,20 @@ class MDTextFieldPassword(MDTextField):
 
 # main screen classes
 class MainScreen(Screen):
-    global USERNAME, CLIENT_SOC
+    username = StringProperty("")
 
-    username = StringProperty(USERNAME)
+    def __init__(self, user, **kw):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
+        super().__init__(**kw)
 
     def update_username(self):
-        self.username = USERNAME
+        # self.username = USERNAME
+        self.username = self.user.username
 
     def pressed_cal(self):
         """
@@ -241,7 +374,7 @@ class MainScreen(Screen):
         when pressing the see profile button it goes to the profile screen
         :return:
         """
-        update_profile(CLIENT_SOC)
+        self.user.update_profile()
         self.manager.current = 'profile'
 
     def pressed_instru(self):
@@ -265,24 +398,28 @@ class MainScreen(Screen):
         """
         self.manager.current = 'report'
 
-    @staticmethod
-    def pressed_exit():
+    # @staticmethod
+    def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
         and close the screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("off" + " " + "."))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server("off" + " " + ".")
+        data = self.user.recv_from_server()
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
 
 
 class ProfileScreen(Screen):
-    global AGE, HEIGHT, WEIGHT, SEX, USERNAME
-
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(ProfileScreen, self).__init__(**kwargs)
         self.username_lbl = self.ids['username']
         self.age_lbl = self.ids['age']
@@ -295,11 +432,11 @@ class ProfileScreen(Screen):
         shows the currant info of the user
         :return: None
         """
-        self.username_lbl.text = "Username: " + USERNAME
-        self.age_lbl.text = "Age: " + AGE
-        self.height_lbl.text = "Height: " + HEIGHT + " (cm)"
-        self.weight_lbl.text = "Weight: " + WEIGHT + " (kg)"
-        self.sex_lbl.text = "Sex: " + SEX
+        self.username_lbl.text = "Username: " + self.user.username
+        self.age_lbl.text = "Age: " + self.user.age
+        self.height_lbl.text = "Height: " + self.user.height + " (cm)"
+        self.weight_lbl.text = "Weight: " + self.user.weight + " (kg)"
+        self.sex_lbl.text = "Sex: " + self.user.sex
         return
 
     def pressed_main(self):
@@ -311,15 +448,19 @@ class ProfileScreen(Screen):
 
 
 class UpdateInfoScreen(Screen):
-    global CLIENT_SOC
-
     # vars for user's data
     user_age = ObjectProperty(None)
     user_height = ObjectProperty(None)
     user_weight = ObjectProperty(None)
     user_sex = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(UpdateInfoScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
 
@@ -336,24 +477,24 @@ class UpdateInfoScreen(Screen):
 
         # error state
         if not (user_height.isnumeric() and user_weight.isnumeric() and user_age.isnumeric()):
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            self.error_lbl.text = self.user.recv_from_server()
 
         elif not (user_sex == "f" or user_sex == "m"):
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            self.error_lbl.text = self.user.recv_from_server()
 
         elif user_age == "" or user_height == "" or user_weight == "" or user_sex == "":
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            self.error_lbl.text = self.user.recv_from_server()
 
         # good input
         else:
-            send_to_server(CLIENT_SOC, ("update" + " " + USERNAME))
+            self.user.send_to_server("update" + " " + self.user.username)
             user_data = user_height + " " + user_weight + " " + user_age + " " + user_sex
-            send_to_server(CLIENT_SOC, user_data)
+            self.user.send_to_server(user_data)
 
-            data_from_server = recv_from_server(CLIENT_SOC)
+            data_from_server = self.user.recv_from_server()
             if "Successfully" in data_from_server:
                 print(":)")
 
@@ -365,9 +506,9 @@ class UpdateInfoScreen(Screen):
                 self.error_lbl.text = ""
 
                 # update the server that we need the calories, water cups and sleep hours
-                update_calories(CLIENT_SOC)
-                update_water(CLIENT_SOC)
-                update_sleep(CLIENT_SOC)
+                self.user.update_calories()
+                self.user.update_water()
+                self.user.update_sleep()
                 self.manager.current = 'main'
 
             else:
@@ -376,7 +517,6 @@ class UpdateInfoScreen(Screen):
 
 
 class WeeklyReportScreen(Screen):
-    global CLIENT_SOC, IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP
     # vars for the report
     avg_cal = StringProperty(None)
     avg_water = StringProperty(None)
@@ -385,7 +525,13 @@ class WeeklyReportScreen(Screen):
     week_water = ListProperty(None)
     week_sleep = ListProperty(None)
 
-    def __init__(self, **kw):
+    def __init__(self, user, **kw):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(WeeklyReportScreen, self).__init__(**kw)
         self.table = None
         self.button = None
@@ -399,8 +545,7 @@ class WeeklyReportScreen(Screen):
         update all the info from the current week - daily cal, water and sleep amounts, avg amounts and ideal amounts
         :return: None
         """
-        global IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP
-        (avg, cal, water, sleep) = get_statistics(CLIENT_SOC)  # get the data from server
+        (avg, cal, water, sleep) = self.user.get_statistics()  # get the data from server
         self.avg_cal = avg.split(" ")[0]
         self.avg_water = avg.split(" ")[1]
         self.avg_sleep = avg.split(" ")[2]
@@ -427,7 +572,7 @@ class WeeklyReportScreen(Screen):
                                      ("Fri.", self.week_cal[5], self.week_water[5], self.week_sleep[5]),
                                      ("Sat.", self.week_cal[6], self.week_water[6], self.week_sleep[6]),
                                      ("Avg", self.avg_cal, self.avg_water, self.avg_sleep),
-                                     ("Ideal", IDEAL_CAL, IDEAL_WATER, IDEAL_SLEEP)
+                                     ("Ideal", self.user.ideal_cal, self.user.ideal_water, self.user.ideal_sleep)
                                  ])
 
         # button to get back to main
@@ -465,9 +610,13 @@ class MainInstructions(Screen):
 
 # cal screen classes
 class CalScreen(Screen):
-    global CLIENT_SOC, USERNAME, CURRENT_CAL, IDEAL_CAL
-
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(CalScreen, self).__init__(**kwargs)
         self.curr_lbl = self.ids['current_cal']
         self.ideal_lbl = self.ids['ideal_cal']
@@ -477,8 +626,8 @@ class CalScreen(Screen):
         shows the currant and ideal calories of the user
         :return: None
         """
-        self.curr_lbl.text = CURRENT_CAL
-        self.ideal_lbl.text = IDEAL_CAL
+        self.curr_lbl.text = self.user.current_cal
+        self.ideal_lbl.text = self.user.ideal_cal
         return
 
     def pressed_main(self):
@@ -510,15 +659,15 @@ class CalScreen(Screen):
         """
         self.manager.current = 'cal instru one'
 
-    @staticmethod
-    def pressed_exit():
+    # @staticmethod
+    def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
         and close the screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("off" + " " + "."))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server("off" + " " + ".")
+        data = self.user.recv_from_server()
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
@@ -529,7 +678,13 @@ class AddFoodScreen(Screen):
     user_amount = ObjectProperty(None)
     arr_food = ListProperty(FOOD_VALUES)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(AddFoodScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
         self.choice = ""
@@ -550,20 +705,20 @@ class AddFoodScreen(Screen):
         and moves to main cal screen if succeeded, else shows appropriate msg
         :return: None
         """
-        global CLIENT_SOC, USERNAME
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("food" + " " + USERNAME))  # let the server know we're entering food
+        # let the server know we're entering food
+        self.user.send_to_server("food" + " " + self.user.username)
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            self.error_lbl.text = self.user.recv_from_server()
             return
 
         # good input
         user_data = self.choice + " " + user_amount
-        send_to_server(CLIENT_SOC, user_data)
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server(user_data)
+        data = self.user.recv_from_server()
 
         if "Finished" in data:
             print(":)")
@@ -573,7 +728,7 @@ class AddFoodScreen(Screen):
             self.error_lbl.text = ""
 
             # update the server that we need the calories
-            update_calories(CLIENT_SOC)
+            self.user.update_calories()
             self.manager.current = 'cal'
 
         else:
@@ -586,7 +741,13 @@ class AddSportScreen(Screen):
     user_amount = ObjectProperty(None)
     arr_sport = ListProperty(SPORT_VALUES)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(AddSportScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
         self.choice = ""
@@ -604,20 +765,20 @@ class AddSportScreen(Screen):
         and moves to main cal screen if succeeded, else shows appropriate msg
         :return: None
         """
-        global CLIENT_SOC
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("sport" + " " + USERNAME))  # let the server know we're entering sport
+        # let the server know we're entering sport
+        self.user.send_to_server("sport" + " " + self.user.username)
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            self.error_lbl.text = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            self.error_lbl.text = self.user.recv_from_server()
             return
 
         # good input
         user_data = self.choice + " " + user_amount
-        send_to_server(CLIENT_SOC, user_data)
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server(user_data)
+        data = self.user.recv_from_server()
 
         if "Finished" in data:
             print(":)")
@@ -627,7 +788,7 @@ class AddSportScreen(Screen):
             self.error_lbl.text = ""
 
             # update the server that we need the calories
-            update_calories(CLIENT_SOC)
+            self.user.update_calories()
             self.manager.current = 'cal'
 
         else:
@@ -669,9 +830,13 @@ class CalInstructionsTwo(Screen):
 
 # water screen classes
 class WaterScreen(Screen):
-    global CLIENT_SOC, USERNAME, CURRENT_WATER, IDEAL_WATER
-
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(WaterScreen, self).__init__(**kwargs)
         self.curr_lbl = self.ids['current_water']
         self.ideal_lbl = self.ids['ideal_water']
@@ -681,8 +846,8 @@ class WaterScreen(Screen):
         shows the currant and ideal water cups of the user
         :return: None
         """
-        self.curr_lbl.text = CURRENT_WATER
-        self.ideal_lbl.text = IDEAL_WATER
+        self.curr_lbl.text = self.user.current_water
+        self.ideal_lbl.text = self.user.ideal_water
         return
 
     def pressed_main(self):
@@ -707,15 +872,15 @@ class WaterScreen(Screen):
         """
         self.manager.current = 'water instru'
 
-    @staticmethod
-    def pressed_exit():
+    # @staticmethod
+    def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
         and close the screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("off" + " " + "."))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server("off" + " " + ".")
+        data = self.user.recv_from_server()
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
@@ -724,7 +889,13 @@ class WaterScreen(Screen):
 class AddCupsScreen(Screen):
     user_amount = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(AddCupsScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
 
@@ -734,20 +905,20 @@ class AddCupsScreen(Screen):
         and moves to main water screen if succeeded, else shows appropriate msg
         :return: None
         """
-        global CLIENT_SOC
         user_amount = self.user_amount.text
 
-        send_to_server(CLIENT_SOC, ("cups" + " " + USERNAME))  # let the server know we're entering cups
+        # let the server know we're entering cups
+        self.user.send_to_server("cups" + " " + self.user.username)
 
         if user_amount == "" or not user_amount.isnumeric():  # error state
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            data_from_server = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            data_from_server = self.user.recv_from_server()
             self.error_lbl.text = data_from_server
             return
 
         # good input
-        send_to_server(CLIENT_SOC, user_amount)
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server(user_amount)
+        data = self.user.recv_from_server()
         if "Finished" in data:
             print(":)")
 
@@ -756,7 +927,7 @@ class AddCupsScreen(Screen):
             self.error_lbl.text = ""
 
             # update the server that we need the water cups
-            update_water(CLIENT_SOC)
+            self.user.update_water()
             self.manager.current = 'water'
         else:
             print(":(")
@@ -774,9 +945,13 @@ class WaterInstructions(Screen):
 
 # sleep screen classes
 class SleepScreen(Screen):
-    global CLIENT_SOC, USERNAME, CURRENT_SLEEP, IDEAL_SLEEP
-
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(SleepScreen, self).__init__(**kwargs)
         self.curr_lbl = self.ids['current_sleep']
         self.ideal_lbl = self.ids['ideal_sleep']
@@ -786,8 +961,8 @@ class SleepScreen(Screen):
         shows the currant and ideal sleep hours of the user
         :return: None
         """
-        self.curr_lbl.text = CURRENT_SLEEP
-        self.ideal_lbl.text = IDEAL_SLEEP
+        self.curr_lbl.text = self.user.current_sleep
+        self.ideal_lbl.text = self.uesr.ideal_sleep
         return
 
     def pressed_main(self):
@@ -812,15 +987,15 @@ class SleepScreen(Screen):
         """
         self.manager.current = 'sleep instru'
 
-    @staticmethod
-    def pressed_exit():
+    # @staticmethod
+    def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
         and close the screen
         :return: None
         """
-        send_to_server(CLIENT_SOC, ("off" + " " + "."))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server("off" + " " + ".")
+        data = self.user.recv_from_server()
         if "Goodbye" in data:  # exit
             BetterHealthApp.get_running_app().stop()
             Window.close()
@@ -830,7 +1005,13 @@ class AddHoursScreen(Screen):
     user_start = ObjectProperty(None)
     user_finish = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, user, **kwargs):
+        """
+        constructor
+        :param user: the user that use the screen
+        :type User
+        """
+        self.user = user  # the user that use the screen
         super(AddHoursScreen, self).__init__(**kwargs)
         self.error_lbl = self.ids['error_msg']
 
@@ -840,28 +1021,28 @@ class AddHoursScreen(Screen):
         and moves to main sleep screen if succeeded, else shows appropriate msg
         :return: None
         """
-        global CLIENT_SOC
         user_start = self.user_start.text
         user_finish = self.user_finish.text
 
-        send_to_server(CLIENT_SOC, ("hours" + " " + USERNAME))  # let the server know we're entering hours
+        # let the server know we're entering hours
+        self.user.send_to_server("hours" + " " + self.user.username)
 
         # error state
         if user_start == "" or user_finish == "":
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            data_from_server = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            data_from_server = self.user.recv_from_server()
             self.error_lbl.text = data_from_server
             return
 
         if ":" not in user_start or ":" not in user_finish:
-            send_to_server(CLIENT_SOC, ("error" + " " + USERNAME))
-            data_from_server = recv_from_server(CLIENT_SOC)
+            self.user.send_to_server("error" + " " + self.user.username)
+            data_from_server = self.user.recv_from_server()
             self.error_lbl.text = data_from_server
             return
 
         # good input
-        send_to_server(CLIENT_SOC, (user_start + " " + user_finish))
-        data = recv_from_server(CLIENT_SOC)
+        self.user.send_to_server(user_start + " " + user_finish)
+        data = self.user.recv_from_server()
 
         if "Finished" in data:
             print(":)")
@@ -872,7 +1053,7 @@ class AddHoursScreen(Screen):
             self.error_lbl.text = ""
 
             # update the server that we need the calories
-            update_sleep(CLIENT_SOC)
+            self.user.update_sleep()
             self.manager.current = 'sleep'
         else:
             print(":(")
@@ -890,6 +1071,10 @@ class SleepInstructions(Screen):
 
 # the app
 class BetterHealthApp(MDApp):
+    def __init__(self, user, **kwargs):
+        super().__init__(**kwargs)
+        self.user = user
+
     def build(self):
         """
         Build the different screens in the app
@@ -898,152 +1083,85 @@ class BetterHealthApp(MDApp):
         sm = ScreenManager()  # the screen manager of the app
         self.icon = 'heart-health.png'
         # start screen
-        sm.add_widget(StartScreen(name='start'))
-        sm.add_widget(LogInScreen(name='log in'))
-        sm.add_widget(SignUpScreen(name='sign up'))
+        sm.add_widget(StartScreen(self.user, name='start'))
+        sm.add_widget(LogInScreen(self.user, name='log in'))
+        sm.add_widget(SignUpScreen(self.user, name='sign up'))
         sm.add_widget(StartInstructions(name='start instru'))
         # main screen
-        sm.add_widget(MainScreen(name='main'))
-        sm.add_widget(ProfileScreen(name='profile'))
-        sm.add_widget(UpdateInfoScreen(name='update info'))
-        sm.add_widget(WeeklyReportScreen(name='report'))
+        sm.add_widget(MainScreen(self.user, name='main'))
+        sm.add_widget(ProfileScreen(self.user, name='profile'))
+        sm.add_widget(UpdateInfoScreen(self.user, name='update info'))
+        sm.add_widget(WeeklyReportScreen(self.user, name='report'))
         sm.add_widget(MainInstructions(name='main instru'))
         # cal screen
-        sm.add_widget(CalScreen(name='cal'))
-        sm.add_widget(AddFoodScreen(name='food'))
-        sm.add_widget(AddSportScreen(name='sport'))
+        sm.add_widget(CalScreen(self.user, name='cal'))
+        sm.add_widget(AddFoodScreen(self.user, name='food'))
+        sm.add_widget(AddSportScreen(self.user, name='sport'))
         sm.add_widget(CalInstructionsOne(name='cal instru one'))
         sm.add_widget(CalInstructionsTwo(name='cal instru two'))
         # water screen
-        sm.add_widget(WaterScreen(name='water'))
-        sm.add_widget(AddCupsScreen(name='cups'))
+        sm.add_widget(WaterScreen(self.user, name='water'))
+        sm.add_widget(AddCupsScreen(self.user, name='cups'))
         sm.add_widget(WaterInstructions(name='water instru'))
         # sleep screen
-        sm.add_widget(SleepScreen(name='sleep'))
-        sm.add_widget(AddHoursScreen(name='hours'))
+        sm.add_widget(SleepScreen(self.user, name='sleep'))
+        sm.add_widget(AddHoursScreen(self.user, name='hours'))
         sm.add_widget(SleepInstructions(name='sleep instru'))
         return sm
 
 
-# functions to handle connections to server that aren't related to a specific screen
-def send_to_server(client_socket, data):
+def switchKeys(c_soc):
     """
-    send data to the server
-    :param client_socket: the client socket
-    :param data: the data to send in string
-    :return: None
+    switch keys diffie-hellman
+    :param c_soc: the communication socket
+    :type c_soc: socket.socket
+    :return: the key
     """
-    global CLIENT_SOC
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(data.encode())
+    # parameters
+    # get p from server
+    len_p = int.from_bytes(c_soc.recv(2), "big")
+    p = int.from_bytes(c_soc.recv(len_p), "big")
+    c_soc.send(b"good")
 
+    # get g from server
+    len_g = int.from_bytes(c_soc.recv(2), "big")
+    g = int.from_bytes(c_soc.recv(len_g), "big")
+    c_soc.send(b"good")
 
-def recv_from_server(client_socket):
-    """
-    receive data from the server
-    :param client_socket: the client socket
-    :return: the data - string
-    """
-    global CLIENT_SOC
-    if CLIENT_SOC == client_socket:
-        return CLIENT_SOC.recv(1024).decode()
+    pn = dh.DHParameterNumbers(p, g)
+    parameters = pn.parameters()
 
+    # sk
+    sk_client = parameters.generate_private_key()
+    # pk = g^sk
+    pk_client = sk_client.public_key()
+    pk_client_bytes = pk_client.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)  # encode to bytes
 
-def update_calories(client_socket):
-    """
-    update the current and ideal calories global variables with data from the server
-    :param client_socket: the client socket
-    :return: None
-    """
-    global CLIENT_SOC, CURRENT_CAL, IDEAL_CAL
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(b"cal" + b" " + USERNAME.encode())
-        data = CLIENT_SOC.recv(1024).decode().split(" ")
-        CURRENT_CAL = data[0]
-        IDEAL_CAL = data[1]
-        return
+    # recv pk from server
+    pk_server_len = int.from_bytes(c_soc.recv(2), "big")  # encode back to int from bytes
+    pk_server_bytes = c_soc.recv(pk_server_len)
+    print(b"client recv: " + pk_server_bytes)  # sanity check
+    pk_server = load_der_public_key(pk_server_bytes, default_backend())  # decode back to dh object
 
+    # send our pk to server
+    c_soc.send(len(pk_client_bytes).to_bytes(2, "big") + pk_client_bytes)  # send also the len in bytes (for the recv)
+    print(b"client sent: " + pk_client_bytes)
 
-def update_water(client_socket):
-    """
-    update the current and ideal water global variables with data from the server
-    :param client_socket: the client socket
-    :return: None
-    """
-    global CLIENT_SOC, CURRENT_WATER, IDEAL_WATER
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(b"water" + b" " + USERNAME.encode())
-        data = CLIENT_SOC.recv(1024).decode().split(" ")
-        CURRENT_WATER = data[0]
-        IDEAL_WATER = data[1]
-        return
+    # create the shared key
+    shared_key = sk_client.exchange(pk_server)
 
-
-def update_sleep(client_socket):
-    """
-    update the current and ideal sleep global variables with data from the server
-    :param client_socket: the client socket
-    :return: None
-    """
-    global CLIENT_SOC, CURRENT_SLEEP, IDEAL_SLEEP
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(b"sleep" + b" " + USERNAME.encode())
-        data = CLIENT_SOC.recv(1024).decode().split(" ")
-        CURRENT_SLEEP = data[0]
-        IDEAL_SLEEP = data[1]
-        return
-
-
-def update_profile(client_socket):
-    """
-    update the info global variables with data from the server
-    :param client_socket: the client socket
-    :return: None
-    """
-    global CLIENT_SOC, AGE, HEIGHT, WEIGHT, SEX
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(b"profile" + b" " + USERNAME.encode())
-        data = CLIENT_SOC.recv(1024).decode().split(" ")
-        AGE = data[0]
-        HEIGHT = data[1]
-        WEIGHT = data[2]
-        if data[3] == "f":
-            SEX = "female"
-        else:
-            SEX = "male"
-        return
-
-
-def get_statistics(client_socket):
-    """
-    get from the user avg and daily amounts of cal, water cups and sleep hours
-    :param client_socket: the client socket
-    :return: dict of avg and daily amounts of cal, water cups and sleep hours
-    """
-    global CLIENT_SOC
-    if CLIENT_SOC == client_socket:
-        CLIENT_SOC.send(b"report" + b" " + USERNAME.encode())
-        tot_data = []  # CLIENT_SOC.recv(1024).decode().split(",")
-        for _ in range(4):
-            tot_data.append(CLIENT_SOC.recv(1024).decode())
-            CLIENT_SOC.send("good".encode())
-        avg = tot_data[0]
-        cal = tot_data[1]
-        water = tot_data[2]
-        sleep = tot_data[3]
-        return avg, cal, water, sleep
+    return shared_key
 
 
 def main():
-    global CLIENT_SOC  # global var to save the client socket
-
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('10.0.0.18', 10000))  # connect to server in port 10000
-    CLIENT_SOC = client_socket
+    client_socket.connect(('server ip goes here', 10000))  # connect to server in port 10000
+    key = switchKeys(client_socket)
+    user = User(client_socket, key)
 
     # start the application
-    BetterHealthApp().run()
+    BetterHealthApp(user).run()
 
 
 if __name__ == '__main__':
