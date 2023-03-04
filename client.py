@@ -8,9 +8,13 @@ from kivymd.uix.datatables import MDDataTable
 import socket
 from hashlib import sha256
 from kivymd.uix.textfield import MDTextField
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.serialization import PublicFormat, Encoding, load_der_public_key
 
 # global vars
 CLIENT_SOC = socket.socket()  # the current client socket
+KEY = ""
 # data of the user
 USERNAME = ""
 CURRENT_CAL = ""
@@ -1034,13 +1038,58 @@ def get_statistics(client_socket):
         return avg, cal, water, sleep
 
 
+def switchKeys(c_soc):
+    """
+    switch keys diffie-hellman
+    :param c_soc: the communication socket
+    :type c_soc: socket.socket
+    :return: the key
+    """
+    # parameters
+    # get p from server
+    len_p = int.from_bytes(c_soc.recv(2), "big")
+    p = int.from_bytes(c_soc.recv(len_p), "big")
+    c_soc.send(b"good")
+
+    # get g from server
+    len_g = int.from_bytes(c_soc.recv(2), "big")
+    g = int.from_bytes(c_soc.recv(len_g), "big")
+    c_soc.send(b"good")
+
+    pn = dh.DHParameterNumbers(p, g)
+    parameters = pn.parameters()
+
+    # sk
+    sk_client = parameters.generate_private_key()
+    # pk = g^sk
+    pk_client = sk_client.public_key()
+    pk_client_bytes = pk_client.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)  # encode to bytes
+
+    # recv pk from server
+    pk_server_len = int.from_bytes(c_soc.recv(2), "big")  # encode back to int from bytes
+    pk_server_bytes = c_soc.recv(pk_server_len)
+    print(b"client recv: " + pk_server_bytes)  # sanity check
+    pk_server = load_der_public_key(pk_server_bytes, default_backend())  # decode back to dh object
+
+    # send our pk to server
+    c_soc.send(len(pk_client_bytes).to_bytes(2, "big") + pk_client_bytes)  # send also the len in bytes (for the recv)
+    print(b"client sent: " + pk_client_bytes)
+
+    # create the shared key
+    shared_key = sk_client.exchange(pk_server)
+
+    return shared_key
+
+
 def main():
     global CLIENT_SOC  # global var to save the client socket
+    global KEY  # global ver to save the shared key
 
     # connect to server
     client_socket = socket.socket()
     client_socket.connect(('10.0.0.18', 10000))  # connect to server in port 10000
     CLIENT_SOC = client_socket
+    KEY = switchKeys(client_socket)
 
     # start the application
     BetterHealthApp().run()
