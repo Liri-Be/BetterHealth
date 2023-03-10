@@ -3,12 +3,74 @@ import threading
 import time
 import datetime
 import firebase_admin
+from cryptography.hazmat.primitives import hashes
 from firebase_admin import credentials, firestore
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.asymmetric import dh, rsa, padding
 from cryptography.hazmat.primitives.serialization import PublicFormat, Encoding, load_der_public_key
 
 
+# entering the app
+def sign_up(p_client_soc, p_name, p_pass, db):
+    """
+    gets username from client, check if it's in the database, if not sign up, otherwise send appropriate msg
+    :param p_client_soc: the client socket
+    :param p_name: the username of the client user
+    :param p_pass: the password of the client user
+    :param db: reference to the database
+    :return: None
+    """
+    if find_name(p_name, db):  # the username is taken
+        p_client_soc.send(b"Username is taken.")
+        return
+
+    doc_ref = db.collection(u'Users').document(p_name)
+    doc_ref.set({'password': p_pass, 'socket': str(p_client_soc)})  # save the password and the socket in the database
+    p_client_soc.send(b"Good username")
+    return
+
+
+def log_in(p_client_soc, p_name, p_pass, db):
+    """
+    gets username from client, check if it's in the database, if so log in, otherwise send appropriate msg
+    :param p_name: the username of the client user
+    :param p_pass: the password of the client user
+    :param p_client_soc: the client socket
+    :param db: reference to the database
+    :return: None
+    """
+    if not find_name(p_name, db):  # the username not found, wait until it found
+        p_client_soc.send(b"Username is not found.")
+        return
+
+    # username found
+    doc_ref_user = db.collection(u'Users').document(p_name)
+    doc_dict_user = doc_ref_user.get().to_dict()
+    doc_ref_info = db.collection(u'Users').document(p_name)
+    doc_dict_info = doc_ref_info.get().to_dict()
+    if doc_dict_user['password'] == p_pass:
+        doc_dict_info['socket'] = str(p_client_soc)
+        doc_ref_info.set(doc_dict_info)  # save the socket in the database
+        p_client_soc.send(b"Successfully log in.")
+    else:
+        p_client_soc.send(b"Wrong password.")
+
+
+def find_name(p_name, db):
+    """
+    check if the username in the database
+    :param p_name: the username we are checking
+    :param db: reference to the database
+    :return True/False: True if the username in the database, and false otherwise
+    """
+    doc_ref = db.collection(u'Users').document(p_name)
+    doc = doc_ref.get()
+    if doc.exists:
+        return True
+    return False
+
+
+# update the info of a member in the database
 def update_info(p_client_soc, p_name, data, db):
     """
     update the info of a member in the database
@@ -113,6 +175,7 @@ def calc_ideal_sleep(p_age):
     return "07:00"
 
 
+# update the health data of a member in the database
 def enter_food(p_client_soc, p_name, db):
     """
     add the calories from the food to the document of the user in the database and send to the server appropriate msg
@@ -301,111 +364,7 @@ def enter_sleep(p_client_soc, p_name, db):
     return
 
 
-def reset(db):
-    """
-    reset the current calories, cups of water and sleep hours when the day changes and update weekly data
-    :param db: reference to the database
-    :return: None
-    """
-    while True:
-        t = time.localtime()
-        current_time = time.strftime("%H:%M", t)  # get the current time
-        hour = int(current_time.split(":")[0])
-        minute = int(current_time.split(":")[1])
-        today_date = datetime.date.today().strftime("%d %m %Y")
-        # weekday assign mon. = 0 -> sun. = 6, I switch to sun. = 0 -> saturday = 6
-        day_ref = (datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1) % 7
-
-        # if the day had passed, reset the current calories of the users and update week arrays
-        # if hour == 0 and minute == 0:
-        if hour > 0 and minute > 0:
-            coll_ref = db.collection(u'UsersInfo').get()  # reference to the collection of users
-            for doc in coll_ref:
-                doc_dict = doc.to_dict()
-
-                # handle different days
-                if day_ref == 1:  # sunday ~00:00 -> reset date new week!
-                    doc_dict['week_cal'] = ["0", "0", "0", "0", "0", "0", "0"]
-                    doc_dict['week_water'] = ["0", "0", "0", "0", "0", "0", "0"]
-                    doc_dict['week_sleep'] = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
-                else:
-                    doc_dict['week_cal'][day_ref] = doc_dict['current cal']
-                    doc_dict['week_water'][day_ref] = doc_dict['current water']
-                    doc_dict['week_sleep'][day_ref] = doc_dict['current sleep']
-
-                # reset data new day :!
-                doc_dict['current cal'] = "0"
-                doc_dict['current water'] = "0"
-                doc_dict['current sleep'] = "00:00"
-                username = doc_dict['user name']
-                doc_ref = db.collection(u'UsersInfo').document(username)
-                doc_ref.set(doc_dict)
-
-
-def suggestions():
-    # TODO write the function - get suggestions from member preferences and machine learning?
-    pass
-
-
-def sign_up(p_client_soc, p_name, p_pass, db):
-    """
-    gets username from client, check if it's in the database, if not sign up, otherwise send appropriate msg
-    :param p_client_soc: the client socket
-    :param p_name: the username of the client user
-    :param p_pass: the password of the client user
-    :param db: reference to the database
-    :return: None
-    """
-    if find_name(p_name, db):  # the username is taken
-        p_client_soc.send(b"Username is taken.")
-        return
-
-    doc_ref = db.collection(u'Users').document(p_name)
-    doc_ref.set({'password': p_pass, 'socket': str(p_client_soc)})  # save the password and the socket in the database
-    p_client_soc.send(b"Good username")
-    return
-
-
-def log_in(p_client_soc, p_name, p_pass, db):
-    """
-    gets username from client, check if it's in the database, if so log in, otherwise send appropriate msg
-    :param p_name: the username of the client user
-    :param p_pass: the password of the client user
-    :param p_client_soc: the client socket
-    :param db: reference to the database
-    :return: None
-    """
-    if not find_name(p_name, db):  # the username not found, wait until it found
-        p_client_soc.send(b"Username is not found.")
-        return
-
-    # username found
-    doc_ref_user = db.collection(u'Users').document(p_name)
-    doc_dict_user = doc_ref_user.get().to_dict()
-    doc_ref_info = db.collection(u'Users').document(p_name)
-    doc_dict_info = doc_ref_info.get().to_dict()
-    if doc_dict_user['password'] == p_pass:
-        doc_dict_info['socket'] = str(p_client_soc)
-        doc_ref_info.set(doc_dict_info)  # save the socket in the database
-        p_client_soc.send(b"Successfully log in.")
-    else:
-        p_client_soc.send(b"Wrong password.")
-
-
-def find_name(p_name, db):
-    """
-    check if the username in the database
-    :param p_name: the username we are checking
-    :param db: reference to the database
-    :return True/False: True if the username in the database, and false otherwise
-    """
-    doc_ref = db.collection(u'Users').document(p_name)
-    doc = doc_ref.get()
-    if doc.exists:
-        return True
-    return False
-
-
+# get data from database
 def get_food(p_food, db):
     """
     get the calories for 100 gram of a specific type of food from database
@@ -442,6 +401,7 @@ def get_sport(p_sport, p_weight, db):
         return dict_food['85']
 
 
+# send data to client from database
 def send_calories(p_client_soc, p_name, db):
     """
     sends the current and the ideal amount of calories to the client
@@ -574,16 +534,23 @@ def weekly_report(p_client_soc, p_name, db):
     return
 
 
-def switchKeys(c_soc):
+# to be soon - suggestions for the members - based on their preferences and machine learning
+def suggestions():
+    # TODO write the function - get suggestions from member preferences and machine learning?
+    pass
+
+
+# some crypto :o
+def switchKeysDH(p, g, c_soc):
     """
     switch keys diffie-hellman
+    :param p: prime of the group
+    :param g: generator of the group
     :param c_soc: the communication socket
     :type c_soc: socket.socket
     :return: the key
     """
     # parameters
-    p = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AAAC42DAD33170D04507A33A85521ABDF1CBA64ECFB850458DBEF0A8AEA71575D060C7DB3970F85A6E1E4C7ABF5AE8CDB0933D71E8C94E04A25619DCEE3D2261AD2EE6BF12FFA06D98A0864D87602733EC86A64521F2B18177B200CBBE117577A615D6C770988C0BAD946E208E24FA074E5AB3143DB5BFCE0FD108E4B82D120A92108011A723C12A787E6D788719A10BDBA5B2699C327186AF4E23C1A946834B6150BDA2583E9CA2AD44CE8DBBBC2DB04DE8EF92E8EFC141FBECAA6287C59474E6BC05D99B2964FA090C3A2233BA186515BE7ED1F612970CEE2D7AFB81BDD762170481CD0069127D5B05AA993B4EA988D8FDDC186FFB7DC90A6C08F4DF435C93402849236C3FAB4D27C7026C1D4DCB2602646DEC9751E763DBA37BDF8FF9406AD9E530EE5DB382F413001AEB06A53ED9027D831179727B0865A8918DA3EDBEBCF9B14ED44CE6CBACED4BB1BDB7F1447E6CC254B332051512BD7AF426FB8F401378CD2BF5983CA01C64B92ECF032EA15D1721D03F482D7CE6E74FEF6D55E702F46980C82B5A84031900B1C9E59E7C97FBEC7E8F323A97A7E36CC88BE0F1D45B7FF585AC54BD407B22B4154AACC8F6D7EBF48E1D814CC5ED20F8037E0A79715EEF29BE32806A1D58BB7C5DA76F550AA3D8A1FBFF0EB19CCB1A313D55CDA56C9EC2EF29632387FE8D76E3C0468043E8F663F4860EE12BF2D5B0B7474D6E694F91E6DCC4024FFFFFFFFFFFFFFFF
-    g = 2
     pn = dh.DHParameterNumbers(p, g)
     parameters = pn.parameters()
 
@@ -623,6 +590,7 @@ def switchKeys(c_soc):
     return shared_key
 
 
+# handle the client func for thread
 def handle_client(c_soc, db):
     """
     handles threads (clients) requests
@@ -630,7 +598,10 @@ def handle_client(c_soc, db):
     :param db: reference to the database
     :return: None
     """
-    key = switchKeys(c_soc)
+    # parameters for key
+    p = 0xFFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AAAC42DAD33170D04507A33A85521ABDF1CBA64ECFB850458DBEF0A8AEA71575D060C7DB3970F85A6E1E4C7ABF5AE8CDB0933D71E8C94E04A25619DCEE3D2261AD2EE6BF12FFA06D98A0864D87602733EC86A64521F2B18177B200CBBE117577A615D6C770988C0BAD946E208E24FA074E5AB3143DB5BFCE0FD108E4B82D120A92108011A723C12A787E6D788719A10BDBA5B2699C327186AF4E23C1A946834B6150BDA2583E9CA2AD44CE8DBBBC2DB04DE8EF92E8EFC141FBECAA6287C59474E6BC05D99B2964FA090C3A2233BA186515BE7ED1F612970CEE2D7AFB81BDD762170481CD0069127D5B05AA993B4EA988D8FDDC186FFB7DC90A6C08F4DF435C93402849236C3FAB4D27C7026C1D4DCB2602646DEC9751E763DBA37BDF8FF9406AD9E530EE5DB382F413001AEB06A53ED9027D831179727B0865A8918DA3EDBEBCF9B14ED44CE6CBACED4BB1BDB7F1447E6CC254B332051512BD7AF426FB8F401378CD2BF5983CA01C64B92ECF032EA15D1721D03F482D7CE6E74FEF6D55E702F46980C82B5A84031900B1C9E59E7C97FBEC7E8F323A97A7E36CC88BE0F1D45B7FF585AC54BD407B22B4154AACC8F6D7EBF48E1D814CC5ED20F8037E0A79715EEF29BE32806A1D58BB7C5DA76F550AA3D8A1FBFF0EB19CCB1A313D55CDA56C9EC2EF29632387FE8D76E3C0468043E8F663F4860EE12BF2D5B0B7474D6E694F91E6DCC4024FFFFFFFFFFFFFFFF
+    g = 2
+    key = switchKeysDH(p, g, c_soc)
     print(key)
     while True:
         data = c_soc.recv(1024).decode()
@@ -672,6 +643,48 @@ def handle_client(c_soc, db):
                 c_soc.send(b"Goodbye.")
                 c_soc.close()
                 break
+
+
+# handling the database
+def reset(db):
+    """
+    reset the current calories, cups of water and sleep hours when the day changes and update weekly data
+    :param db: reference to the database
+    :return: None
+    """
+    while True:
+        t = time.localtime()
+        current_time = time.strftime("%H:%M", t)  # get the current time
+        hour = int(current_time.split(":")[0])
+        minute = int(current_time.split(":")[1])
+        today_date = datetime.date.today().strftime("%d %m %Y")
+        # weekday assign mon. = 0 -> sun. = 6, I switch to sun. = 0 -> saturday = 6
+        day_ref = (datetime.datetime.strptime(today_date, '%d %m %Y').weekday() + 1) % 7
+
+        # if the day had passed, reset the current calories of the users and update week arrays
+        # if hour == 0 and minute == 0:
+        if hour > 0 and minute > 0:
+            coll_ref = db.collection(u'UsersInfo').get()  # reference to the collection of users
+            for doc in coll_ref:
+                doc_dict = doc.to_dict()
+
+                # handle different days
+                if day_ref == 1:  # sunday ~00:00 -> reset date new week!
+                    doc_dict['week_cal'] = ["0", "0", "0", "0", "0", "0", "0"]
+                    doc_dict['week_water'] = ["0", "0", "0", "0", "0", "0", "0"]
+                    doc_dict['week_sleep'] = ["00:00", "00:00", "00:00", "00:00", "00:00", "00:00", "00:00"]
+                else:
+                    doc_dict['week_cal'][day_ref] = doc_dict['current cal']
+                    doc_dict['week_water'][day_ref] = doc_dict['current water']
+                    doc_dict['week_sleep'][day_ref] = doc_dict['current sleep']
+
+                # reset data new day :!
+                doc_dict['current cal'] = "0"
+                doc_dict['current water'] = "0"
+                doc_dict['current sleep'] = "00:00"
+                username = doc_dict['user name']
+                doc_ref = db.collection(u'UsersInfo').document(username)
+                doc_ref.set(doc_dict)
 
 
 def main():

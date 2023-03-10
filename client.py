@@ -1,3 +1,5 @@
+import hashlib
+
 from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -12,22 +14,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import dh
 from cryptography.hazmat.primitives.serialization import PublicFormat, Encoding, load_der_public_key
 
-# # global vars
-# CLIENT_SOC = socket.socket()  # the current client socket
-# KEY = ""
-# # data of the user
-# USERNAME = ""
-# CURRENT_CAL = ""
-# IDEAL_CAL = ""
-# CURRENT_WATER = ""
-# IDEAL_WATER = ""
-# CURRENT_SLEEP = ""
-# IDEAL_SLEEP = ""
-# HEIGHT = ""
-# WEIGHT = ""
-# AGE = ""
-# SEX = ""
-
 # the possible choices for user
 FOOD_VALUES = ["Apple", "Bagel", "Banana", "Beans", "Beef", "Blackberries", "Bread white", "Bread wholemeal",
                "Broccoli", "Butter", "Cabbage", "Cauliflower", "Celery", "Chicken", "Chocolate", "Cornflakes",
@@ -41,16 +27,20 @@ SPORT_VALUES = ["Basketball", "Bowling", "Cycling", "Dancing", "Gardening", "Gol
 
 
 class User:
-    def __init__(self, c_soc, k):
+    def __init__(self, c_soc, p, g, k):
         """
         constructor
         :param c_soc: client_socket
         :type c_soc: socket.socket
+        :param p: prime of group - diffie hellman
+        :param g: generator of group - diffie hellman
         :param k: key
         """
         # communication with the server
         self.client_socket = c_soc  # the current client socket
         self.key = k  # the shared key for communication with the server
+        self.p = p
+        self.g = g
         # data of the user
         self.username = ""
         self.current_cal = ""
@@ -175,7 +165,6 @@ class StartScreen(Screen):
         """
         self.manager.current = 'start instru'
 
-    # @staticmethod
     def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
@@ -228,7 +217,6 @@ class LogInScreen(Screen):
 
         if "Successfully" in data_from_server:
             print(":)")
-            # USERNAME = username
             self.user.username = username
             # update the server that we need the calories, water cups and sleep hours of user
             self.user.update_calories()
@@ -345,7 +333,6 @@ class MainScreen(Screen):
         super().__init__(**kw)
 
     def update_username(self):
-        # self.username = USERNAME
         self.username = self.user.username
 
     def pressed_cal(self):
@@ -398,7 +385,6 @@ class MainScreen(Screen):
         """
         self.manager.current = 'report'
 
-    # @staticmethod
     def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
@@ -659,7 +645,6 @@ class CalScreen(Screen):
         """
         self.manager.current = 'cal instru one'
 
-    # @staticmethod
     def pressed_exit(self):
         """
         when pressing the exit button it sends data to the server and modify it that we are leaving the app
@@ -1110,12 +1095,13 @@ class BetterHealthApp(MDApp):
         return sm
 
 
-def switchKeys(c_soc):
+# some crypto :o
+def switchKeysDH(c_soc):
     """
     switch keys diffie-hellman
     :param c_soc: the communication socket
     :type c_soc: socket.socket
-    :return: the key
+    :return: p, g and the key
     """
     # parameters
     # get p from server
@@ -1150,15 +1136,15 @@ def switchKeys(c_soc):
     # create the shared key
     shared_key = sk_client.exchange(pk_server)
 
-    return shared_key
+    return p, g, hashlib.sha256(shared_key).hexdigest()
 
 
 def main():
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('server ip goes here', 10000))  # connect to server in port 10000
-    key = switchKeys(client_socket)
-    user = User(client_socket, key)
+    client_socket.connect(('ip address goes here', 10000))  # connect to server in port 10000
+    (p, g, key) = switchKeysDH(client_socket)
+    user = User(client_socket, p, g, key)
 
     # start the application
     BetterHealthApp(user).run()
