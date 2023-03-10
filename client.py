@@ -1,5 +1,6 @@
 import hashlib
 
+from cryptography.hazmat.primitives import hashes
 from kivy.metrics import dp
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -11,7 +12,7 @@ import socket
 from hashlib import sha256
 from kivymd.uix.textfield import MDTextField
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives.asymmetric import dh
+from cryptography.hazmat.primitives.asymmetric import dh, rsa, padding
 from cryptography.hazmat.primitives.serialization import PublicFormat, Encoding, load_der_public_key
 
 # the possible choices for user
@@ -41,6 +42,8 @@ class User:
         self.key = k  # the shared key for communication with the server
         self.p = p
         self.g = g
+        self.sk, self.pk = self.createKeysRSA()  # the RSA keys for communication with the server
+        self.pk_server = self.switchKeysRSA()  # the public key of the server
         # data of the user
         self.username = ""
         self.current_cal = ""
@@ -54,21 +57,71 @@ class User:
         self.age = ""
         self.sex = ""
 
-    # functions to handle connections to server that aren't related to a specific screen
+    # RSA encryption and decryption for data transfer between client and server
+    @staticmethod
+    def createKeysRSA():
+        """
+        create keys for asymmetric encryption
+        :return: sk and pk
+        """
+        sk = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+        pk = sk.public_key()
+        return sk, pk
+
+    def switchKeysRSA(self):
+        """
+        switch keys RSA
+        :return: our sk and the pk of the server
+        """
+        # recv pk from server
+        pk_server_len = int.from_bytes(self.client_socket.recv(2), "big")  # encode back to int from bytes
+        pk_server_bytes = self.client_socket.recv(pk_server_len)
+        print(b"client recv: " + pk_server_bytes)  # sanity check
+        pk_server = load_der_public_key(pk_server_bytes, default_backend())  # decode back to dh object
+
+        # send our pk to server
+        pk_client_bytes = self.pk.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)  # encode to bytes
+        self.client_socket.send(
+            len(pk_client_bytes).to_bytes(2, "big") + pk_client_bytes)  # send also the len in bytes (for the recv)
+        print(b"client sent: " + pk_client_bytes)  # sanity check
+
+        return pk_server
+
+    def encryptRSA(self, msg):
+        """
+        encrypt msg with RSA
+        :param msg: the msg to encrypt
+        :return: the encrypted msg
+        """
+        return self.pk_server.encrypt(msg, padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
+
+    def decryptRSA(self, cipher):
+        """
+        decrypt msg with RSA
+        :param cipher: the cipher to decrypt
+        :return: the decrypted msg
+        """
+        return self.sk.decrypt(cipher, padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
+
+    # send and receive data from the server
     def send_to_server(self, data):
         """
         send data to the server
         :param data: the data to send in string
         :return: None
         """
-        self.client_socket.send(data.encode())
+        cipher = self.encryptRSA(data.encode())
+        self.client_socket.send(cipher)
 
     def recv_from_server(self):
         """
         receive data from the server
         :return: the data - string
         """
-        data = self.client_socket.recv(1024).decode()
+        cipher = self.client_socket.recv(256)
+        data = self.decryptRSA(cipher).decode()
         return data
 
     def update_calories(self):
@@ -76,8 +129,8 @@ class User:
         update the current and ideal calories with data from the server
         :return: None
         """
-        self.client_socket.send(b"cal" + b" " + self.username.encode())
-        data = self.client_socket.recv(1024).decode().split(" ")
+        self.send_to_server("cal" + " " + self.username)
+        data = self.recv_from_server().split(" ")
         self.current_cal = data[0]
         self.ideal_cal = data[1]
 
@@ -86,8 +139,8 @@ class User:
         update the current and ideal water with data from the server
         :return: None
         """
-        self.client_socket.send(b"water" + b" " + self.username.encode())
-        data = self.client_socket.recv(1024).decode().split(" ")
+        self.send_to_server("water" + " " + self.username)
+        data = self.recv_from_server().split(" ")
         self.current_water = data[0]
         self.ideal_water = data[1]
 
@@ -96,8 +149,8 @@ class User:
         update the current and ideal sleep with data from the server
         :return: None
         """
-        self.client_socket.send(b"sleep" + b" " + self.username.encode())
-        data = self.client_socket.recv(1024).decode().split(" ")
+        self.send_to_server("sleep" + " " + self.username)
+        data = self.recv_from_server().split(" ")
         self.current_sleep = data[0]
         self.ideal_sleep = data[1]
 
@@ -106,8 +159,8 @@ class User:
         update the info with data from the server
         :return: None
         """
-        self.client_socket.send(b"profile" + b" " + self.username.encode())
-        data = self.client_socket.recv(1024).decode().split(" ")
+        self.send_to_server("profile" + " " + self.username)
+        data = self.recv_from_server().split(" ")
         self.age = data[0]
         self.height = data[1]
         self.weight = data[2]
@@ -121,11 +174,11 @@ class User:
         get from the user avg and daily amounts of cal, water cups and sleep hours
         :return: dict of avg and daily amounts of cal, water cups and sleep hours
         """
-        self.client_socket.send(b"report" + b" " + self.username.encode())
+        self.send_to_server("report" + " " + self.username)
         whole_data = []
         for _ in range(4):
-            whole_data.append(self.client_socket.recv(1024).decode())
-            self.client_socket.send("good".encode())
+            whole_data.append(self.recv_from_server())
+            self.send_to_server("good")
         avg = whole_data[0]
         cal = whole_data[1]
         water = whole_data[2]
@@ -204,7 +257,7 @@ class LogInScreen(Screen):
         password = self.password.text
 
         if " " in username or username == "" or " " in password or password == "":  # error state
-            self.user.send_to_server("error" + " " + username + " " + password)
+            self.user.send_to_server("error" + " " + username)
             self.error_lbl.text = self.user.recv_from_server()
             return
 
@@ -212,7 +265,8 @@ class LogInScreen(Screen):
         hashed_pwd = sha256(password.encode()).hexdigest()
 
         # modify the server we are logging in
-        self.user.send_to_server("log" + " " + username + " " + hashed_pwd)
+        self.user.send_to_server("log" + " " + username)  # send the username
+        self.user.send_to_server(hashed_pwd)  # send the hashed password
         data_from_server = self.user.recv_from_server()  # get answer whether we logged in or not
 
         if "Successfully" in data_from_server:
@@ -226,7 +280,7 @@ class LogInScreen(Screen):
 
         else:
             print(":(")
-            self.error_lbl.text = data_from_server  # "Username has not found."
+            self.error_lbl.text = data_from_server  # "Username has not found. / Wrong password."
 
 
 class SignUpScreen(Screen):
@@ -1142,9 +1196,9 @@ def switchKeysDH(c_soc):
 def main():
     # connect to server
     client_socket = socket.socket()
-    client_socket.connect(('ip address goes here', 10000))  # connect to server in port 10000
-    (p, g, key) = switchKeysDH(client_socket)
-    user = User(client_socket, p, g, key)
+    client_socket.connect(('server ip goes here', 10000))  # connect to server in port 10000
+    # (p, g, key) = switchKeysDH(client_socket)
+    user = User(client_socket, 0, 0, 0)
 
     # start the application
     BetterHealthApp(user).run()
